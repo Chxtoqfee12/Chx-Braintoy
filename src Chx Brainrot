@@ -1,0 +1,24 @@
+-- โหลด BaconLib
+local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/bacon"))()
+local version, changelog = lib:GetInfo()
+
+-- สร้างหน้าต่าง
+local window = lib:CreateWindow("Chx Brainrot v"..version)
+
+-- สร้างแท็บ
+local mainLabel = lib:CreateLabel(window, "Main")
+
+-- ปุ่ม Steal
+local stealBtn = lib:CreateButton(window, "🛠 Steal", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ily123950/Vulkan/refs/heads/main/Trx"))()
+end)
+
+-- ปุ่ม Function UI
+local funcBtn = lib:CreateButton(window, "⚙ Function UI", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ily123950/-/refs/heads/main/nameless"))()
+end)
+
+-- ปุ่ม Hop Server
+local hopBtn = lib:CreateButton(window, "🌍 Hop Server", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ily123950/Hopper/refs/heads/main/releaseass.txt"))()
+end)
