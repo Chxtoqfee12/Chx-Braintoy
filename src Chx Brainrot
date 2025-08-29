@@ -5,20 +5,107 @@ local version, changelog = lib:GetInfo()
 -- สร้างหน้าต่าง
 local window = lib:CreateWindow("Chx Brainrot v"..version)
 
--- สร้างแท็บ
+-- สร้าง Label
 local mainLabel = lib:CreateLabel(window, "Main")
 
--- ปุ่ม Steal
-local stealBtn = lib:CreateButton(window, "🛠 Steal", function()
+-- ไฟล์เก็บค่า Auto Execute
+local HttpService = game:GetService("HttpService")
+local filename = "AutoExecSettings.txt"
+
+-- โหลดค่าจากไฟล์
+local AutoExecFuncs = {
+    Steal = false,
+    FunctionUI = false,
+    HopServer = false
+}
+
+if pcall(function() readfile(filename) end) then
+    local success, data = pcall(function()
+        return HttpService:JSONDecode(readfile(filename))
+    end)
+    if success and data then
+        AutoExecFuncs = data
+    end
+end
+
+-- ฟังก์ชันบันทึกค่า
+local function SaveSettings()
+    writefile(filename, HttpService:JSONEncode(AutoExecFuncs))
+end
+
+-- ฟังก์ชันแต่ละปุ่ม
+local function RunSteal()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ily123950/Vulkan/refs/heads/main/Trx"))()
-end)
+end
 
--- ปุ่ม Function UI
-local funcBtn = lib:CreateButton(window, "⚙ Function UI", function()
+local function RunFunctionUI()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ily123950/-/refs/heads/main/nameless"))()
+end
+
+local function RunHopServer()
+    getgenv().ALLOWED_PLACE_ID = 109983668079237
+    getgenv().RETRY_DELAY = 2
+    getgenv().MIN_PLAYERS = 2
+    getgenv().MAX_PLAYERS = 7
+    getgenv().CHECK_COOLDOWN = 5
+    getgenv().SOUND_ID = 91907916191505
+    getgenv().MODEL_SEARCH_SETTINGS = {
+        ["Los Tralaleritos"] = { enabled = true, requireEffect = false },
+        ["Graipuss Medussi"] = { enabled = true, requireEffect = false },
+        ["La Grande Combinasion"] = { enabled = true, requireEffect = false },
+        ["Garama and Madundung"] = { enabled = true, requireEffect = false },
+        ["Las Tralaleritas"] = { enabled = true, requireEffect = false },
+        ["Pot Hotspot"] = { enabled = true, requireEffect = false },
+        ["Nuclearo Dinossauro"] = { enabled = true, requireEffect = false },
+        ["Chicleteira Bicicleteira"] = { enabled = true, requireEffect = false },
+        ["Los Combinasionas"] = { enabled = true, requireEffect = false },
+        ["Dragon Cannelloni"] = { enabled = true, requireEffect = false },
+        ["Torrtuginni Dragonfrutini"] = { enabled = true, requireEffect = false },
+        ["Ketupat Kepat"] = { enabled = true, requireEffect = false },
+        ["Los Hotspotsitos"] = { enabled = true, requireEffect = false },
+        ["Esok Sekolah"] = { enabled = true, requireEffect = false },
+        ["Los Matteos"] = { enabled = true, requireEffect = false },
+        ["Los Spiderinis"] = { enabled = true, requireEffect = false },
+        ["La Supreme Combinasion"] = { enabled = true, requireEffect = false },
+        ["Nooo My Hotspot"] = { enabled = true, requireEffect = false },
+        ["Blackhole Goat"] = { enabled = true, requireEffect = false },
+        ["Dul Dul Dul"] = { enabled = true, requireEffect = false },
+    }
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ily123950/keyless/refs/heads/main/keyless"))()
+end
+
+-- สร้างปุ่มปกติ
+local stealBtn = lib:CreateButton(window, "🛠 Steal", RunSteal)
+local funcBtn = lib:CreateButton(window, "⚙ Function UI", RunFunctionUI)
+local hopBtn = lib:CreateButton(window, "🌍 Hop Server", RunHopServer)
+
+-- สร้าง Toggle สำหรับ Auto Execute
+local toggleSteal = lib:CreateToggle(window, "Auto Steal", AutoExecFuncs.Steal, function(state)
+    AutoExecFuncs.Steal = state
+    SaveSettings()
 end)
 
--- ปุ่ม Hop Server
-local hopBtn = lib:CreateButton(window, "🌍 Hop Server", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ily123950/Hopper/refs/heads/main/releaseass.txt"))()
+local toggleFuncUI = lib:CreateToggle(window, "Auto Function UI", AutoExecFuncs.FunctionUI, function(state)
+    AutoExecFuncs.FunctionUI = state
+    SaveSettings()
+end)
+
+local toggleHop = lib:CreateToggle(window, "Auto Hop Server", AutoExecFuncs.HopServer, function(state)
+    AutoExecFuncs.HopServer = state
+    SaveSettings()
+end)
+
+-- ฟังก์ชัน Auto Execute ทีละตัวด้วย delay
+task.spawn(function()
+    if AutoExecFuncs.Steal then
+        task.spawn(RunSteal)
+        task.wait(1) -- delay ให้ฟังก์ชันเริ่มก่อน
+    end
+    if AutoExecFuncs.FunctionUI then
+        task.spawn(RunFunctionUI)
+        task.wait(1)
+    end
+    if AutoExecFuncs.HopServer then
+        task.spawn(RunHopServer)
+    end
 end)
