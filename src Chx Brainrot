@@ -35,7 +35,7 @@ end
 
 -- ฟังก์ชันแต่ละปุ่ม
 local function RunSteal()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ily123950/Vulkan/refs/heads/main/Trx"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20steal"))()
 end
 
 local function RunFunctionUI()
