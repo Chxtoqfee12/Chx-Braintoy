@@ -39,7 +39,7 @@ local function RunSteal()
 end
 
 local function RunFunctionUI()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ily123950/-/refs/heads/main/nameless"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"))()
 end
 
 local function RunHopServer()
