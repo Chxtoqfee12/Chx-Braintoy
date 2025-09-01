@@ -1,473 +1,186 @@
---[[
-Chx Lua Protect
-]]--
+--discord.gg/boronide, code generated using luamin.js™
 
-local StrToNumber = tonumber;
-local Byte = string.byte;
-local Char = string.char;
-local Sub = string.sub;
-local Subg = string.gsub;
-local Rep = string.rep;
-local Concat = table.concat;
-local Insert = table.insert;
-local LDExp = math.ldexp;
-local GetFEnv = getfenv or function()
-	return _ENV;
-end;
-local Setmetatable = setmetatable;
-local PCall = pcall;
-local Select = select;
-local Unpack = unpack or table.unpack;
-local ToNumber = tonumber;
-local function VMCall(ByteString, vmenv, ...)
-	local DIP = 1;
-	local repeatNext;
-	ByteString = Subg(Sub(ByteString, 5), "..", function(byte)
-		if (Byte(byte, 2) == 81) then
-			repeatNext = StrToNumber(Sub(byte, 1, 1));
-			return "";
-		else
-			local a = Char(StrToNumber(byte, 16));
-			if repeatNext then
-				local b = Rep(a, repeatNext);
-				repeatNext = nil;
-				return b;
-			else
-				return a;
-			end
-		end
-	end);
-	local function gBit(Bit, Start, End)
-		if End then
-			local Res = (Bit / (2 ^ (Start - 1))) % (2 ^ (((End - 1) - (Start - 1)) + 1));
-			return Res - (Res % 1);
-		else
-			local Plc = 2 ^ (Start - 1);
-			return (((Bit % (Plc + Plc)) >= Plc) and 1) or 0;
-		end
+
+
+--discord.gg/boronide, code generated using luamin.js™
+
+
+
+--discord.gg/boronide, code generated using luamin.js™
+
+
+
+-- โหลด BaconLib
+local L_1_ = loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/lib"))()
+local L_2_, L_3_ = L_1_:GetInfo()
+
+-- สร้างหน้าต่าง
+local L_4_ = L_1_:CreateWindow("Chx Brainrot v" .. L_2_)
+
+-- สร้าง Label
+local L_5_ = L_1_:CreateLabel(L_4_, "Main")
+
+-- ไฟล์เก็บค่า Auto Execute
+local L_6_ = game:GetService("HttpService")
+local L_7_ = "AutoExecSettings.txt"
+
+-- โหลดค่าจากไฟล์
+local L_8_ = {
+	Steal = false,
+	FunctionUI = false,
+	HopServer = false
+}
+
+if pcall(function()
+	readfile(L_7_)
+end) then
+	local L_19_, L_20_ = pcall(function()
+		return L_6_:JSONDecode(readfile(L_7_))
+	end)
+	if L_19_ and L_20_ then
+		L_8_ = L_20_
 	end
-	local function gBits8()
-		local a = Byte(ByteString, DIP, DIP);
-		DIP = DIP + 1;
-		return a;
-	end
-	local function gBits16()
-		local a, b = Byte(ByteString, DIP, DIP + 2);
-		DIP = DIP + 2;
-		return (b * 256) + a;
-	end
-	local function gBits32()
-		local a, b, c, d = Byte(ByteString, DIP, DIP + 3);
-		DIP = DIP + 4;
-		return (d * 16777216) + (c * 65536) + (b * 256) + a;
-	end
-	local function gFloat()
-		local Left = gBits32();
-		local Right = gBits32();
-		local IsNormal = 1;
-		local Mantissa = (gBit(Right, 1, 20) * (2 ^ 32)) + Left;
-		local Exponent = gBit(Right, 21, 31);
-		local Sign = ((gBit(Right, 32) == 1) and -1) or 1;
-		if (Exponent == 0) then
-			if (Mantissa == 0) then
-				return Sign * 0;
-			else
-				Exponent = 1;
-				IsNormal = 0;
-			end
-		elseif (Exponent == 2047) then
-			return ((Mantissa == 0) and (Sign * (1 / 0))) or (Sign * NaN);
-		end
-		return LDExp(Sign, Exponent - 1023) * (IsNormal + (Mantissa / (2 ^ 52)));
-	end
-	local function gString(Len)
-		local Str;
-		if not Len then
-			Len = gBits32();
-			if (Len == 0) then
-				return "";
-			end
-		end
-		Str = Sub(ByteString, DIP, (DIP + Len) - 1);
-		DIP = DIP + Len;
-		local FStr = {};
-		for Idx = 1, #Str do
-			FStr[Idx] = Char(Byte(Sub(Str, Idx, Idx)));
-		end
-		return Concat(FStr);
-	end
-	local gInt = gBits32;
-	local function _R(...)
-		return {...}, Select("#", ...);
-	end
-	local function Deserialize()
-		local Instrs = {};
-		local Functions = {};
-		local Lines = {};
-		local Chunk = {Instrs,Functions,nil,Lines};
-		local ConstCount = gBits32();
-		local Consts = {};
-		for Idx = 1, ConstCount do
-			local Type = gBits8();
-			local Cons;
-			if (Type == 1) then
-				Cons = gBits8() ~= 0;
-			elseif (Type == 2) then
-				Cons = gFloat();
-			elseif (Type == 3) then
-				Cons = gString();
-			end
-			Consts[Idx] = Cons;
-		end
-		Chunk[3] = gBits8();
-		for Idx = 1, gBits32() do
-			local Descriptor = gBits8();
-			if (gBit(Descriptor, 1, 1) == 0) then
-				local Type = gBit(Descriptor, 2, 3);
-				local Mask = gBit(Descriptor, 4, 6);
-				local Inst = {gBits16(),gBits16(),nil,nil};
-				if (Type == 0) then
-					Inst[3] = gBits16();
-					Inst[4] = gBits16();
-				elseif (Type == 1) then
-					Inst[3] = gBits32();
-				elseif (Type == 2) then
-					Inst[3] = gBits32() - (2 ^ 16);
-				elseif (Type == 3) then
-					Inst[3] = gBits32() - (2 ^ 16);
-					Inst[4] = gBits16();
-				end
-				if (gBit(Mask, 1, 1) == 1) then
-					Inst[2] = Consts[Inst[2]];
-				end
-				if (gBit(Mask, 2, 2) == 1) then
-					Inst[3] = Consts[Inst[3]];
-				end
-				if (gBit(Mask, 3, 3) == 1) then
-					Inst[4] = Consts[Inst[4]];
-				end
-				Instrs[Idx] = Inst;
-			end
-		end
-		for Idx = 1, gBits32() do
-			Functions[Idx - 1] = Deserialize();
-		end
-		return Chunk;
-	end
-	local function Wrap(Chunk, Upvalues, Env)
-		local Instr = Chunk[1];
-		local Proto = Chunk[2];
-		local Params = Chunk[3];
-		return function(...)
-			local Instr = Instr;
-			local Proto = Proto;
-			local Params = Params;
-			local _R = _R;
-			local VIP = 1;
-			local Top = -1;
-			local Vararg = {};
-			local Args = {...};
-			local PCount = Select("#", ...) - 1;
-			local Lupvals = {};
-			local Stk = {};
-			for Idx = 0, PCount do
-				if (Idx >= Params) then
-					Vararg[Idx - Params] = Args[Idx + 1];
-				else
-					Stk[Idx] = Args[Idx + 1];
-				end
-			end
-			local Varargsz = (PCount - Params) + 1;
-			local Inst;
-			local Enum;
-			while true do
-				Inst = Instr[VIP];
-				Enum = Inst[1];
-				if (Enum <= 26) then
-					if (Enum <= 12) then
-						if (Enum <= 5) then
-							if (Enum <= 2) then
-								if (Enum <= 0) then
-									local A = Inst[2];
-									do
-										return Unpack(Stk, A, Top);
-									end
-								elseif (Enum > 1) then
-									local A = Inst[2];
-									Stk[A](Stk[A + 1]);
-								else
-									local B = Inst[3];
-									local K = Stk[B];
-									for Idx = B + 1, Inst[4] do
-										K = K .. Stk[Idx];
-									end
-									Stk[Inst[2]] = K;
-								end
-							elseif (Enum <= 3) then
-								local A = Inst[2];
-								Stk[A] = Stk[A](Unpack(Stk, A + 1, Inst[3]));
-							elseif (Enum > 4) then
-								local A = Inst[2];
-								do
-									return Unpack(Stk, A, Top);
-								end
-							else
-								Stk[Inst[2]] = Env[Inst[3]];
-							end
-						elseif (Enum <= 8) then
-							if (Enum <= 6) then
-								Stk[Inst[2]] = Upvalues[Inst[3]];
-							elseif (Enum == 7) then
-								local A = Inst[2];
-								local B = Stk[Inst[3]];
-								Stk[A + 1] = B;
-								Stk[A] = B[Inst[4]];
-							else
-								local A = Inst[2];
-								Stk[A] = Stk[A](Stk[A + 1]);
-							end
-						elseif (Enum <= 10) then
-							if (Enum > 9) then
-								local A = Inst[2];
-								Stk[A] = Stk[A](Stk[A + 1]);
-							else
-								Stk[Inst[2]] = Stk[Inst[3]][Inst[4]];
-							end
-						elseif (Enum > 11) then
-							Stk[Inst[2]] = Inst[3];
-						else
-							do
-								return;
-							end
-						end
-					elseif (Enum <= 19) then
-						if (Enum <= 15) then
-							if (Enum <= 13) then
-								local A = Inst[2];
-								Stk[A] = Stk[A](Unpack(Stk, A + 1, Top));
-							elseif (Enum == 14) then
-								Stk[Inst[2]][Inst[3]] = Stk[Inst[4]];
-							else
-								Stk[Inst[2]] = {};
-							end
-						elseif (Enum <= 17) then
-							if (Enum == 16) then
-								VIP = Inst[3];
-							else
-								local A = Inst[2];
-								Stk[A] = Stk[A]();
-							end
-						elseif (Enum > 18) then
-							local B = Inst[3];
-							local K = Stk[B];
-							for Idx = B + 1, Inst[4] do
-								K = K .. Stk[Idx];
-							end
-							Stk[Inst[2]] = K;
-						else
-							local A = Inst[2];
-							local Results = {Stk[A](Stk[A + 1])};
-							local Edx = 0;
-							for Idx = A, Inst[4] do
-								Edx = Edx + 1;
-								Stk[Idx] = Results[Edx];
-							end
-						end
-					elseif (Enum <= 22) then
-						if (Enum <= 20) then
-							Stk[Inst[2]] = Stk[Inst[3]][Inst[4]];
-						elseif (Enum > 21) then
-							local A = Inst[2];
-							do
-								return Stk[A](Unpack(Stk, A + 1, Top));
-							end
-						else
-							local NewProto = Proto[Inst[3]];
-							local NewUvals;
-							local Indexes = {};
-							NewUvals = Setmetatable({}, {__index=function(_, Key)
-								local Val = Indexes[Key];
-								return Val[1][Val[2]];
-							end,__newindex=function(_, Key, Value)
-								local Val = Indexes[Key];
-								Val[1][Val[2]] = Value;
-							end});
-							for Idx = 1, Inst[4] do
-								VIP = VIP + 1;
-								local Mvm = Instr[VIP];
-								if (Mvm[1] == 44) then
-									Indexes[Idx - 1] = {Stk,Mvm[3]};
-								else
-									Indexes[Idx - 1] = {Upvalues,Mvm[3]};
-								end
-								Lupvals[#Lupvals + 1] = Indexes;
-							end
-							Stk[Inst[2]] = Wrap(NewProto, NewUvals, Env);
-						end
-					elseif (Enum <= 24) then
-						if (Enum == 23) then
-							Stk[Inst[2]][Inst[3]] = Inst[4];
-						else
-							local A = Inst[2];
-							local Results, Limit = _R(Stk[A](Unpack(Stk, A + 1, Inst[3])));
-							Top = (Limit + A) - 1;
-							local Edx = 0;
-							for Idx = A, Top do
-								Edx = Edx + 1;
-								Stk[Idx] = Results[Edx];
-							end
-						end
-					elseif (Enum > 25) then
-						local NewProto = Proto[Inst[3]];
-						local NewUvals;
-						local Indexes = {};
-						NewUvals = Setmetatable({}, {__index=function(_, Key)
-							local Val = Indexes[Key];
-							return Val[1][Val[2]];
-						end,__newindex=function(_, Key, Value)
-							local Val = Indexes[Key];
-							Val[1][Val[2]] = Value;
-						end});
-						for Idx = 1, Inst[4] do
-							VIP = VIP + 1;
-							local Mvm = Instr[VIP];
-							if (Mvm[1] == 44) then
-								Indexes[Idx - 1] = {Stk,Mvm[3]};
-							else
-								Indexes[Idx - 1] = {Upvalues,Mvm[3]};
-							end
-							Lupvals[#Lupvals + 1] = Indexes;
-						end
-						Stk[Inst[2]] = Wrap(NewProto, NewUvals, Env);
-					elseif Stk[Inst[2]] then
-						VIP = VIP + 1;
-					else
-						VIP = Inst[3];
-					end
-				elseif (Enum <= 39) then
-					if (Enum <= 32) then
-						if (Enum <= 29) then
-							if (Enum <= 27) then
-								Stk[Inst[2]] = Upvalues[Inst[3]];
-							elseif (Enum == 28) then
-								do
-									return;
-								end
-							else
-								Stk[Inst[2]] = Wrap(Proto[Inst[3]], nil, Env);
-							end
-						elseif (Enum <= 30) then
-							Stk[Inst[2]] = Stk[Inst[3]];
-						elseif (Enum == 31) then
-							local A = Inst[2];
-							local Results, Limit = _R(Stk[A](Stk[A + 1]));
-							Top = (Limit + A) - 1;
-							local Edx = 0;
-							for Idx = A, Top do
-								Edx = Edx + 1;
-								Stk[Idx] = Results[Edx];
-							end
-						else
-							local A = Inst[2];
-							local Results, Limit = _R(Stk[A](Unpack(Stk, A + 1, Inst[3])));
-							Top = (Limit + A) - 1;
-							local Edx = 0;
-							for Idx = A, Top do
-								Edx = Edx + 1;
-								Stk[Idx] = Results[Edx];
-							end
-						end
-					elseif (Enum <= 35) then
-						if (Enum <= 33) then
-							Stk[Inst[2]] = Wrap(Proto[Inst[3]], nil, Env);
-						elseif (Enum > 34) then
-							local A = Inst[2];
-							Stk[A] = Stk[A]();
-						else
-							Stk[Inst[2]] = {};
-						end
-					elseif (Enum <= 37) then
-						if (Enum == 36) then
-							Stk[Inst[2]]();
-						else
-							local A = Inst[2];
-							local Results = {Stk[A](Stk[A + 1])};
-							local Edx = 0;
-							for Idx = A, Inst[4] do
-								Edx = Edx + 1;
-								Stk[Idx] = Results[Edx];
-							end
-						end
-					elseif (Enum == 38) then
-						Stk[Inst[2]] = Env[Inst[3]];
-					else
-						local A = Inst[2];
-						Stk[A](Unpack(Stk, A + 1, Top));
-					end
-				elseif (Enum <= 46) then
-					if (Enum <= 42) then
-						if (Enum <= 40) then
-							Stk[Inst[2]][Inst[3]] = Inst[4];
-						elseif (Enum == 41) then
-							local A = Inst[2];
-							Stk[A] = Stk[A](Unpack(Stk, A + 1, Top));
-						else
-							local A = Inst[2];
-							Stk[A] = Stk[A](Unpack(Stk, A + 1, Inst[3]));
-						end
-					elseif (Enum <= 44) then
-						if (Enum == 43) then
-							Stk[Inst[2]]();
-						else
-							Stk[Inst[2]] = Stk[Inst[3]];
-						end
-					elseif (Enum == 45) then
-						Stk[Inst[2]] = Inst[3];
-					else
-						local A = Inst[2];
-						local Results, Limit = _R(Stk[A](Stk[A + 1]));
-						Top = (Limit + A) - 1;
-						local Edx = 0;
-						for Idx = A, Top do
-							Edx = Edx + 1;
-							Stk[Idx] = Results[Edx];
-						end
-					end
-				elseif (Enum <= 49) then
-					if (Enum <= 47) then
-						if Stk[Inst[2]] then
-							VIP = VIP + 1;
-						else
-							VIP = Inst[3];
-						end
-					elseif (Enum == 48) then
-						local A = Inst[2];
-						Stk[A](Unpack(Stk, A + 1, Top));
-					else
-						Stk[Inst[2]][Inst[3]] = Stk[Inst[4]];
-					end
-				elseif (Enum <= 51) then
-					if (Enum == 50) then
-						local A = Inst[2];
-						do
-							return Stk[A](Unpack(Stk, A + 1, Top));
-						end
-					else
-						VIP = Inst[3];
-					end
-				elseif (Enum > 52) then
-					local A = Inst[2];
-					local B = Stk[Inst[3]];
-					Stk[A + 1] = B;
-					Stk[A] = B[Inst[4]];
-				else
-					local A = Inst[2];
-					Stk[A](Stk[A + 1]);
-				end
-				VIP = VIP + 1;
-			end
-		end;
-	end
-	return Wrap(Deserialize(), {}, vmenv)(...);
 end
-return VMCall("LOL!1B3Q00030A3Q006C6F6164737472696E6703043Q0067616D6503073Q00482Q7470476574034E3Q00682Q7470733A2Q2F7261772E67697468756275736572636F6E74656E742E636F6D2F436878746F71662Q6531322F4368782D427261696E746F792F726566732F68656164732F6D61696E2F6C696203073Q00476574496E666F030C3Q0043726561746557696E646F77030E3Q0043687820427261696E726F742076030B3Q004372656174654C6162656C03043Q004D61696E030A3Q0047657453657276696365030B3Q00482Q74705365727669636503143Q004175746F4578656353652Q74696E67732E74787403053Q00537465616C0100030A3Q0046756E6374696F6E554903093Q00486F7053657276657203053Q007063612Q6C030C3Q0043726561746542752Q746F6E030A3Q00F09F9BA020537465616C030F3Q00E29A992046756E6374696F6E205549030F3Q00F09F8C8D20486F7020536572766572030C3Q00437265617465546F2Q676C65030A3Q004175746F20537465616C03103Q004175746F2046756E6374696F6E205549030F3Q004175746F20486F702053657276657203043Q007461736B03053Q00737061776E00623Q0012263Q00013Q001226000100023Q00203500010001000300122D000300044Q0018000100034Q00295Q00022Q00233Q0001000200203500013Q00052Q002500010002000200203500033Q000600122D000500074Q001E000600014Q00010005000500062Q000300030005000200203500043Q00082Q001E000600033Q00122D000700094Q0003000400070002001226000500023Q00203500050005000A00122D0007000B4Q000300050007000200122D0006000C4Q000F00073Q00030030280007000D000E0030280007000F000E00302800070010000E001226000800113Q00061A00093Q000100012Q002C3Q00064Q00080008000200020006190008002B00013Q0004103Q002B0001001226000800113Q00061A00090001000100022Q002C3Q00054Q002C3Q00064Q00250008000200090006190008002B00013Q0004103Q002B00010006190009002B00013Q0004103Q002B00012Q001E000700093Q00061A00080002000100032Q002C3Q00064Q002C3Q00054Q002C3Q00073Q000221000900033Q000221000A00043Q000221000B00053Q002035000C3Q00122Q001E000E00033Q00122D000F00134Q001E001000094Q0003000C00100002002035000D3Q00122Q001E000F00033Q00122D001000144Q001E0011000A4Q0003000D00110002002035000E3Q00122Q001E001000033Q00122D001100154Q001E0012000B4Q0003000E00120002002035000F3Q00162Q001E001100033Q00122D001200173Q00201400130007000D00061A00140006000100022Q002C3Q00074Q002C3Q00084Q0003000F0014000200203500103Q00162Q001E001200033Q00122D001300183Q00201400140007000F00061A00150007000100022Q002C3Q00074Q002C3Q00084Q000300100015000200203500113Q00162Q001E001300033Q00122D001400193Q00201400150007001000061A00160008000100022Q002C3Q00074Q002C3Q00084Q00030011001600020012260012001A3Q00201400120012001B00061A00130009000100042Q002C3Q00074Q002C3Q00094Q002C3Q000A4Q002C3Q000B4Q00340012000200012Q000B3Q00013Q000A3Q00013Q0003083Q007265616466696C6500043Q0012263Q00014Q001B00016Q00343Q000200012Q000B3Q00017Q00023Q00030A3Q004A534F4E4465636F646503083Q007265616466696C6500084Q001B7Q0020355Q0001001226000200024Q001B000300014Q002E000200034Q00329Q008Q000B3Q00017Q00023Q0003093Q00777269746566696C65030A3Q004A534F4E456E636F646500083Q0012263Q00014Q001B00016Q001B000200013Q0020350002000200022Q001B000400024Q0018000200044Q00305Q00012Q000B3Q00017Q00043Q00030A3Q006C6F6164737472696E6703043Q0067616D6503073Q00482Q747047657403463Q00682Q7470733A2Q2F7261772E67697468756275736572636F6E74656E742E636F6D2F696C793132333935302F56756C6B616E2F726566732F68656164732F6D61696E2F54727800083Q0012263Q00013Q001226000100023Q00203500010001000300122D000300044Q0018000100034Q00295Q00022Q00243Q000100012Q000B3Q00017Q00043Q00030A3Q006C6F6164737472696E6703043Q0067616D6503073Q00482Q747047657403463Q00682Q7470733A2Q2F7261772E67697468756275736572636F6E74656E742E636F6D2F696C793132333935302F2D2F726566732F68656164732F6D61696E2F6E616D656C652Q7300083Q0012263Q00013Q001226000100023Q00203500010001000300122D000300044Q0018000100034Q00295Q00022Q00243Q000100012Q000B3Q00017Q00293Q0003073Q0067657467656E7603103Q00412Q4C4F5745445F504C4143455F49440240A1E25DE401D942030B3Q0052455452595F44454C4159027Q0040030B3Q004D494E5F504C4159455253030B3Q004D41585F504C4159455253026Q001C40030E3Q00434845434B5F432Q4F4C444F574E026Q00144003083Q00534F554E445F49440240C495ACBEE5D44203153Q004D4F44454C5F5345415243485F53452Q54494E475303103Q004C6F73205472616C616C657269746F7303073Q00656E61626C65642Q01030D3Q0072657175697265452Q66656374010003103Q004772616970752Q73204D6564752Q736903153Q004C61204772616E646520436F6D62696E6173696F6E03143Q00476172616D6120616E64204D6164756E64756E6703103Q004C6173205472616C616C657269746173030B3Q00506F7420486F7473706F7403133Q004E75636C6561726F2044696E6F2Q736175726F03183Q00436869636C6574656972612042696369636C65746569726103113Q004C6F7320436F6D62696E6173696F6E617303113Q00447261676F6E2043612Q6E652Q6C6F6E6903193Q00546F2Q72747567692Q6E6920447261676F6E66727574696E69030D3Q004B657475706174204B6570617403103Q004C6F7320486F7473706F747369746F73030C3Q0045736F6B2053656B6F6C6168030B3Q004C6F73204D612Q74656F73030E3Q004C6F7320537069646572696E697303163Q004C612053757072656D6520436F6D62696E6173696F6E030F3Q004E3Q6F204D7920486F7473706F74030E3Q00426C61636B686F6C6520476F6174030B3Q0044756C2044756C2044756C030A3Q006C6F6164737472696E6703043Q0067616D6503073Q00482Q7470476574034B3Q00682Q7470733A2Q2F7261772E67697468756275736572636F6E74656E742E636F6D2F696C793132333935302F6B65796C652Q732F726566732F68656164732F6D61696E2F6B65796C652Q73006E3Q0012263Q00014Q00233Q000100020030283Q000200030012263Q00014Q00233Q000100020030283Q000400050012263Q00014Q00233Q000100020030283Q000600050012263Q00014Q00233Q000100020030283Q000700080012263Q00014Q00233Q000100020030283Q0009000A0012263Q00014Q00233Q000100020030283Q000B000C0012263Q00014Q00233Q000100022Q000F00013Q00122Q000F00023Q00020030280002000F001000302800020011001200100E0001000E00022Q000F00023Q00020030280002000F001000302800020011001200100E0001001300022Q000F00023Q00020030280002000F001000302800020011001200100E0001001400022Q000F00023Q00020030280002000F001000302800020011001200100E0001001500022Q000F00023Q00020030280002000F001000302800020011001200100E0001001600022Q000F00023Q00020030280002000F001000302800020011001200100E0001001700022Q000F00023Q00020030280002000F001000302800020011001200100E0001001800022Q000F00023Q00020030280002000F001000302800020011001200100E0001001900022Q000F00023Q00020030280002000F001000302800020011001200100E0001001A00022Q000F00023Q00020030280002000F001000302800020011001200100E0001001B00022Q000F00023Q00020030280002000F001000302800020011001200100E0001001C00022Q000F00023Q00020030280002000F001000302800020011001200100E0001001D00022Q000F00023Q00020030280002000F001000302800020011001200100E0001001E00022Q000F00023Q00020030280002000F001000302800020011001200100E0001001F00022Q000F00023Q00020030280002000F001000302800020011001200100E0001002000022Q000F00023Q00020030280002000F001000302800020011001200100E0001002100022Q000F00023Q00020030280002000F001000302800020011001200100E0001002200022Q000F00023Q00020030280002000F001000302800020011001200100E0001002300022Q000F00023Q00020030280002000F001000302800020011001200100E0001002400022Q000F00023Q00020030280002000F001000302800020011001200100E00010025000200100E3Q000D00010012263Q00263Q001226000100273Q00203500010001002800122D000300294Q0018000100034Q00295Q00022Q00243Q000100012Q000B3Q00017Q00013Q0003053Q00537465616C01054Q001B00015Q00100E000100014Q001B000100014Q00240001000100012Q000B3Q00017Q00013Q00030A3Q0046756E6374696F6E554901054Q001B00015Q00100E000100014Q001B000100014Q00240001000100012Q000B3Q00017Q00013Q0003093Q00486F7053657276657201054Q001B00015Q00100E000100014Q001B000100014Q00240001000100012Q000B3Q00017Q00073Q0003053Q00537465616C03043Q007461736B03053Q00737061776E03043Q0077616974026Q00F03F030A3Q0046756E6374696F6E554903093Q00486F7053657276657200214Q001B7Q0020145Q00010006193Q000C00013Q0004103Q000C00010012263Q00023Q0020145Q00032Q001B000100014Q00343Q000200010012263Q00023Q0020145Q000400122D000100054Q00343Q000200012Q001B7Q0020145Q00060006193Q001800013Q0004103Q001800010012263Q00023Q0020145Q00032Q001B000100024Q00343Q000200010012263Q00023Q0020145Q000400122D000100054Q00343Q000200012Q001B7Q0020145Q00070006193Q002000013Q0004103Q002000010012263Q00023Q0020145Q00032Q001B000100034Q00343Q000200012Q000B3Q00017Q00", GetFEnv(), ...);
+
+-- ฟังก์ชันบันทึกค่า
+local function L_9_func()
+	writefile(L_7_, L_6_:JSONEncode(L_8_))
+end
+
+-- ฟังก์ชันแต่ละปุ่ม
+local function L_10_func()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20steal"))()
+end
+
+local function L_11_func()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"))()
+end
+
+local function L_12_func()
+	getgenv().ALLOWED_PLACE_ID = 109983668079237
+	getgenv().RETRY_DELAY = 2
+	getgenv().MIN_PLAYERS = 2
+	getgenv().MAX_PLAYERS = 7
+	getgenv().CHECK_COOLDOWN = 5
+	getgenv().SOUND_ID = 91907916191505
+	getgenv().MODEL_SEARCH_SETTINGS = {
+		["Los Tralaleritos"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Graipuss Medussi"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["La Grande Combinasion"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Garama and Madundung"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Las Tralaleritas"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Pot Hotspot"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Nuclearo Dinossauro"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Chicleteira Bicicleteira"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Los Combinasionas"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Dragon Cannelloni"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Torrtuginni Dragonfrutini"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Ketupat Kepat"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Los Hotspotsitos"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Esok Sekolah"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Los Matteos"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Los Spiderinis"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["La Supreme Combinasion"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Nooo My Hotspot"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Blackhole Goat"] = {
+			enabled = true,
+			requireEffect = false
+		},
+		["Dul Dul Dul"] = {
+			enabled = true,
+			requireEffect = false
+		},
+	}
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
+end
+
+-- สร้างปุ่มปกติ
+local L_13_ = L_1_:CreateButton(L_4_, "🛠 Steal", L_10_func)
+local L_14_ = L_1_:CreateButton(L_4_, "⚙ Function UI", L_11_func)
+local L_15_ = L_1_:CreateButton(L_4_, "🌍 Hop Server", L_12_func)
+
+-- สร้าง Toggle สำหรับ Auto Execute
+local L_16_ = L_1_:CreateToggle(L_4_, "Auto Steal", L_8_.Steal, function(L_21_arg0)
+	L_8_.Steal = L_21_arg0
+	L_9_func()
+end)
+
+local L_17_ = L_1_:CreateToggle(L_4_, "Auto Function UI", L_8_.FunctionUI, function(L_22_arg0)
+	L_8_.FunctionUI = L_22_arg0
+	L_9_func()
+end)
+
+local L_18_ = L_1_:CreateToggle(L_4_, "Auto Hop Server", L_8_.HopServer, function(L_23_arg0)
+	L_8_.HopServer = L_23_arg0
+	L_9_func()
+end)
+
+-- ฟังก์ชัน Auto Execute ทีละตัวด้วย delay
+task.spawn(function()
+	if L_8_.Steal then
+		task.spawn(L_10_func)
+		task.wait(1) -- delay ให้ฟังก์ชันเริ่มก่อน
+	end
+	if L_8_.FunctionUI then
+		task.spawn(L_11_func)
+		task.wait(1)
+	end
+	if L_8_.HopServer then
+		task.wait(2)
+		task.spawn(L_12_func)
+	end
+end)
