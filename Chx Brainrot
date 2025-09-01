@@ -1,186 +1,112 @@
---discord.gg/boronide, code generated using luamin.js™
-
-
-
---discord.gg/boronide, code generated using luamin.js™
-
-
-
---discord.gg/boronide, code generated using luamin.js™
-
-
-
 -- โหลด BaconLib
-local L_1_ = loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/lib"))()
-local L_2_, L_3_ = L_1_:GetInfo()
+local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/lib"))()
+local version, changelog = lib:GetInfo()
 
 -- สร้างหน้าต่าง
-local L_4_ = L_1_:CreateWindow("Chx Brainrot v" .. L_2_)
+local window = lib:CreateWindow("Chx Brainrot v"..version)
 
 -- สร้าง Label
-local L_5_ = L_1_:CreateLabel(L_4_, "Main")
+local mainLabel = lib:CreateLabel(window, "Main")
 
 -- ไฟล์เก็บค่า Auto Execute
-local L_6_ = game:GetService("HttpService")
-local L_7_ = "AutoExecSettings.txt"
+local HttpService = game:GetService("HttpService")
+local filename = "AutoExecSettings.txt"
 
 -- โหลดค่าจากไฟล์
-local L_8_ = {
-	Steal = false,
-	FunctionUI = false,
-	HopServer = false
+local AutoExecFuncs = {
+    Steal = false,
+    FunctionUI = false,
+    HopServer = false
 }
 
-if pcall(function()
-	readfile(L_7_)
-end) then
-	local L_19_, L_20_ = pcall(function()
-		return L_6_:JSONDecode(readfile(L_7_))
-	end)
-	if L_19_ and L_20_ then
-		L_8_ = L_20_
-	end
+if pcall(function() readfile(filename) end) then
+    local success, data = pcall(function()
+        return HttpService:JSONDecode(readfile(filename))
+    end)
+    if success and data then
+        AutoExecFuncs = data
+    end
 end
 
 -- ฟังก์ชันบันทึกค่า
-local function L_9_func()
-	writefile(L_7_, L_6_:JSONEncode(L_8_))
+local function SaveSettings()
+    writefile(filename, HttpService:JSONEncode(AutoExecFuncs))
 end
 
 -- ฟังก์ชันแต่ละปุ่ม
-local function L_10_func()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20steal"))()
+local function RunSteal()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20steal"))()
 end
 
-local function L_11_func()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"))()
+local function RunFunctionUI()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"))()
 end
 
-local function L_12_func()
-	getgenv().ALLOWED_PLACE_ID = 109983668079237
-	getgenv().RETRY_DELAY = 2
-	getgenv().MIN_PLAYERS = 2
-	getgenv().MAX_PLAYERS = 7
-	getgenv().CHECK_COOLDOWN = 5
-	getgenv().SOUND_ID = 91907916191505
-	getgenv().MODEL_SEARCH_SETTINGS = {
-		["Los Tralaleritos"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Graipuss Medussi"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["La Grande Combinasion"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Garama and Madundung"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Las Tralaleritas"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Pot Hotspot"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Nuclearo Dinossauro"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Chicleteira Bicicleteira"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Los Combinasionas"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Dragon Cannelloni"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Torrtuginni Dragonfrutini"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Ketupat Kepat"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Los Hotspotsitos"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Esok Sekolah"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Los Matteos"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Los Spiderinis"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["La Supreme Combinasion"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Nooo My Hotspot"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Blackhole Goat"] = {
-			enabled = true,
-			requireEffect = false
-		},
-		["Dul Dul Dul"] = {
-			enabled = true,
-			requireEffect = false
-		},
-	}
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
+local function RunHopServer()
+    getgenv().ALLOWED_PLACE_ID = 109983668079237
+    getgenv().RETRY_DELAY = 2
+    getgenv().MIN_PLAYERS = 2
+    getgenv().MAX_PLAYERS = 7
+    getgenv().CHECK_COOLDOWN = 5
+    getgenv().SOUND_ID = 91907916191505
+    getgenv().MODEL_SEARCH_SETTINGS = {
+        ["Los Tralaleritos"] = { enabled = true, requireEffect = false },
+        ["Graipuss Medussi"] = { enabled = true, requireEffect = false },
+        ["La Grande Combinasion"] = { enabled = true, requireEffect = false },
+        ["Garama and Madundung"] = { enabled = true, requireEffect = false },
+        ["Las Tralaleritas"] = { enabled = true, requireEffect = false },
+        ["Pot Hotspot"] = { enabled = true, requireEffect = false },
+        ["Nuclearo Dinossauro"] = { enabled = true, requireEffect = false },
+        ["Chicleteira Bicicleteira"] = { enabled = true, requireEffect = false },
+        ["Los Combinasionas"] = { enabled = true, requireEffect = false },
+        ["Dragon Cannelloni"] = { enabled = true, requireEffect = false },
+        ["Torrtuginni Dragonfrutini"] = { enabled = true, requireEffect = false },
+        ["Ketupat Kepat"] = { enabled = true, requireEffect = false },
+        ["Los Hotspotsitos"] = { enabled = true, requireEffect = false },
+        ["Esok Sekolah"] = { enabled = true, requireEffect = false },
+        ["Los Matteos"] = { enabled = true, requireEffect = false },
+        ["Los Spiderinis"] = { enabled = true, requireEffect = false },
+        ["La Supreme Combinasion"] = { enabled = true, requireEffect = false },
+        ["Nooo My Hotspot"] = { enabled = true, requireEffect = false },
+        ["Blackhole Goat"] = { enabled = true, requireEffect = false },
+        ["Dul Dul Dul"] = { enabled = true, requireEffect = false },
+    }
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
 end
 
 -- สร้างปุ่มปกติ
-local L_13_ = L_1_:CreateButton(L_4_, "🛠 Steal", L_10_func)
-local L_14_ = L_1_:CreateButton(L_4_, "⚙ Function UI", L_11_func)
-local L_15_ = L_1_:CreateButton(L_4_, "🌍 Hop Server", L_12_func)
+local stealBtn = lib:CreateButton(window, "🛠 Steal", RunSteal)
+local funcBtn = lib:CreateButton(window, "⚙ Function UI", RunFunctionUI)
+local hopBtn = lib:CreateButton(window, "🌍 Hop Server", RunHopServer)
 
 -- สร้าง Toggle สำหรับ Auto Execute
-local L_16_ = L_1_:CreateToggle(L_4_, "Auto Steal", L_8_.Steal, function(L_21_arg0)
-	L_8_.Steal = L_21_arg0
-	L_9_func()
+local toggleSteal = lib:CreateToggle(window, "Auto Steal", AutoExecFuncs.Steal, function(state)
+    AutoExecFuncs.Steal = state
+    SaveSettings()
 end)
 
-local L_17_ = L_1_:CreateToggle(L_4_, "Auto Function UI", L_8_.FunctionUI, function(L_22_arg0)
-	L_8_.FunctionUI = L_22_arg0
-	L_9_func()
+local toggleFuncUI = lib:CreateToggle(window, "Auto Function UI", AutoExecFuncs.FunctionUI, function(state)
+    AutoExecFuncs.FunctionUI = state
+    SaveSettings()
 end)
 
-local L_18_ = L_1_:CreateToggle(L_4_, "Auto Hop Server", L_8_.HopServer, function(L_23_arg0)
-	L_8_.HopServer = L_23_arg0
-	L_9_func()
+local toggleHop = lib:CreateToggle(window, "Auto Hop Server", AutoExecFuncs.HopServer, function(state)
+    AutoExecFuncs.HopServer = state
+    SaveSettings()
 end)
 
 -- ฟังก์ชัน Auto Execute ทีละตัวด้วย delay
 task.spawn(function()
-	if L_8_.Steal then
-		task.spawn(L_10_func)
-		task.wait(1) -- delay ให้ฟังก์ชันเริ่มก่อน
-	end
-	if L_8_.FunctionUI then
-		task.spawn(L_11_func)
-		task.wait(1)
-	end
-	if L_8_.HopServer then
-		task.wait(2)
-		task.spawn(L_12_func)
-	end
+    if AutoExecFuncs.Steal then
+        task.spawn(RunSteal)
+        task.wait(1) -- delay ให้ฟังก์ชันเริ่มก่อน
+    end
+    if AutoExecFuncs.FunctionUI then
+        task.spawn(RunFunctionUI)
+        task.wait(1)
+    end
+    if AutoExecFuncs.HopServer then
+        task.wait(2)
+        task.spawn(RunHopServer)
+    end
 end)
