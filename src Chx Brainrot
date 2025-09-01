@@ -106,6 +106,7 @@ task.spawn(function()
         task.wait(1)
     end
     if AutoExecFuncs.HopServer then
+        task.wait(2)
         task.spawn(RunHopServer)
     end
 end)
