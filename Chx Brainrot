@@ -38,6 +38,10 @@ local function RunSteal()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20steal"))()
 end
 
+local function invisible()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20steal"))()
+end
+
 local function RunFunctionUI()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"))()
 end
@@ -81,6 +85,10 @@ task.spawn(function()
         task.wait(1) -- delay ให้ฟังก์ชันเริ่มก่อน
     end
     if AutoExecFuncs.FunctionUI then
+        task.spawn(RunFunctionUI)
+        task.wait(1)
+    end
+    if AutoExecFuncs.invisible then
         task.spawn(RunFunctionUI)
         task.wait(1)
     end
