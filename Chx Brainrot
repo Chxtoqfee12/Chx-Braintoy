@@ -38,7 +38,7 @@ local function RunSteal()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20steal"))()
 end
 
-local function invisible()
+local function Runinvisible()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/jadyednbefb/jayden/refs/heads/main/steal-script"))()
 end
 
@@ -61,6 +61,7 @@ end
 local stealBtn = lib:CreateButton(window, "🛠 Steal", RunSteal)
 local funcBtn = lib:CreateButton(window, "⚙ Function UI", RunFunctionUI)
 local hopBtn = lib:CreateButton(window, "🌍 Hop Server", RunHopServer)
+local invisibleBtn = lib:CreateButton(window, "👻 invisible", Runinvisible)
 
 -- สร้าง Toggle สำหรับ Auto Execute
 local toggleSteal = lib:CreateToggle(window, "Auto Steal", AutoExecFuncs.Steal, function(state)
@@ -89,7 +90,7 @@ task.spawn(function()
         task.wait(1)
     end
     if AutoExecFuncs.invisible then
-        task.spawn(RunFunctionUI)
+        task.spawn(Runinvisible)
         task.wait(1)
     end
     if AutoExecFuncs.HopServer then
