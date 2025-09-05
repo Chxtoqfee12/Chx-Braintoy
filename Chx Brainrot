@@ -16,7 +16,8 @@ local filename = "AutoExecSettings.txt"
 local AutoExecFuncs = {
     Steal = false,
     FunctionUI = false,
-    HopServer = false
+    HopServer = false,
+    invisible = false -- เพิ่มค่าเริ่มต้น
 }
 
 if pcall(function() readfile(filename) end) then
@@ -24,6 +25,8 @@ if pcall(function() readfile(filename) end) then
         return HttpService:JSONDecode(readfile(filename))
     end)
     if success and data then
+        -- เช็กว่ามี invisible หรือไม่ ถ้าไม่มีให้เพิ่ม
+        if data.invisible == nil then data.invisible = false end
         AutoExecFuncs = data
     end
 end
@@ -39,7 +42,7 @@ local function RunSteal()
 end
 
 local function Runinvisible()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/jadyednbefb/jayden/refs/heads/main/steal-script"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/jadyednbefb/jayden/refs/heads/main/steal-script.lua"))() -- ตรวจสอบว่าเป็น Raw URL .lua
 end
 
 local function RunFunctionUI()
@@ -88,7 +91,7 @@ end)
 task.spawn(function()
     if AutoExecFuncs.Steal then
         task.spawn(RunSteal)
-        task.wait(1) -- delay ให้ฟังก์ชันเริ่มก่อน
+        task.wait(1)
     end
     if AutoExecFuncs.FunctionUI then
         task.spawn(RunFunctionUI)
