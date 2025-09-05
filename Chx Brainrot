@@ -79,6 +79,11 @@ local toggleHop = lib:CreateToggle(window, "Auto Hop Server", AutoExecFuncs.HopS
     SaveSettings()
 end)
 
+local toggleinvisible = lib:CreateToggle(window, "Auto invisible", AutoExecFuncs.invisible, function(state)
+    AutoExecFuncs.invisible = state
+    SaveSettings()
+end)
+
 -- ฟังก์ชัน Auto Execute ทีละตัวด้วย delay
 task.spawn(function()
     if AutoExecFuncs.Steal then
