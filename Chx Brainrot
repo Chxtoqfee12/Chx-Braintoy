@@ -39,7 +39,7 @@ local function RunSteal()
 end
 
 local function Runinvisible()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/jadyednbefb/jayden/refs/heads/main/steal-script.lua"))() -- ตรวจสอบว่าเป็น Raw URL .lua
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/jadyednbefb/jayden/refs/heads/main/steal-script"))()
 end
 
 local function RunFunctionUI()
