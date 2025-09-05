@@ -5,9 +5,6 @@ local version, changelog = lib:GetInfo()
 -- สร้างหน้าต่าง
 local window = lib:CreateWindow("Chx Brainrot v"..version)
 
--- สร้าง Label
-local mainLabel = lib:CreateLabel(window, "Main")
-
 -- ไฟล์เก็บค่า Auto Execute
 local HttpService = game:GetService("HttpService")
 local filename = "AutoExecSettings.txt"
