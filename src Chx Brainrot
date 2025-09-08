@@ -33,11 +33,6 @@ local function SaveSettings()
     writefile(filename, HttpService:JSONEncode(AutoExecFuncs))
 end
 
--- ฟังก์ชันแต่ละปุ่ม
-local function RunSteal()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20steal"))()
-end
-
 local function RunFunctionUI()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"))()
 end
@@ -75,15 +70,11 @@ local function RunHopServer()
 end
 
 -- สร้างปุ่มปกติ
-local stealBtn = lib:CreateButton(window, "🛠 Steal", RunSteal)
+
 local funcBtn = lib:CreateButton(window, "⚙ Function UI", RunFunctionUI)
 local hopBtn = lib:CreateButton(window, "🌍 Hop Server", RunHopServer)
 
 -- สร้าง Toggle สำหรับ Auto Execute
-local toggleSteal = lib:CreateToggle(window, "Auto Steal", AutoExecFuncs.Steal, function(state)
-    AutoExecFuncs.Steal = state
-    SaveSettings()
-end)
 
 local toggleFuncUI = lib:CreateToggle(window, "Auto Function UI", AutoExecFuncs.FunctionUI, function(state)
     AutoExecFuncs.FunctionUI = state
@@ -97,10 +88,6 @@ end)
 
 -- ฟังก์ชัน Auto Execute ทีละตัวด้วย delay
 task.spawn(function()
-    if AutoExecFuncs.Steal then
-        task.spawn(RunSteal)
-        task.wait(1) -- delay ให้ฟังก์ชันเริ่มก่อน
-    end
     if AutoExecFuncs.FunctionUI then
         task.spawn(RunFunctionUI)
         task.wait(1)
