@@ -35,7 +35,7 @@ end
 
 -- ฟังก์ชันแต่ละปุ่ม
 local function RunSteal()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20steal"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/dthzqq/New-Bypassed/refs/heads/main/SAB"))()
 end
 
 local function Runinvisible()
