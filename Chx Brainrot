@@ -179,7 +179,7 @@ function enableFloat()
 	FloatPart.Parent = workspace
 	FloatPart.Size = Vector3.new(3,0.2,3)
 	FloatPart.Anchored = true
-	FloatPart.Transparency = 0.4
+	FloatPart.Transparency = 1
 	FloatPart.Color = Color3.fromRGB(0,150,255)
 	Instance.new("CylinderHandleAdornment", FloatPart)
 
