@@ -13,8 +13,8 @@ screenGui.Parent = playerGui
 
 -- Frame หลัก
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 220, 0, 150) -- <-- ปรับความสูง UI ตรงนี้
-mainFrame.Position = UDim2.new(0.05, 0, 0.25, 0) -- <-- ปรับตำแหน่งสูง/ต่ำตรงนี้
+mainFrame.Size = UDim2.new(0, 220, 0, 150)
+mainFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
@@ -29,7 +29,6 @@ local stroke = Instance.new("UIStroke")
 stroke.Thickness = 4
 stroke.Parent = mainFrame
 
--- สีรุ้ง
 local colors = {
 	Color3.fromRGB(255,0,0),
 	Color3.fromRGB(255,127,0),
@@ -40,7 +39,6 @@ local colors = {
 	Color3.fromRGB(148,0,211)
 }
 
--- ไล่สีแบบสมูท
 spawn(function()
 	local t = 0
 	while true do
@@ -75,19 +73,6 @@ titleText.TextColor3 = Color3.fromRGB(255,255,255)
 titleText.TextXAlignment = Enum.TextXAlignment.Left
 titleText.Parent = titleBar
 
--- ปุ่มปิด UI
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.AnchorPoint = Vector2.new(1, 0) -- ทำให้ตำแหน่งอิงขอบขวา
-closeBtn.Position = UDim2.new(1, -5, 0, 5) -- ปรับ offset ให้อยู่ห่างขอบเล็กน้อย
-closeBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
-closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-closeBtn.Text = "X"
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 16
-closeBtn.Parent = titleBar
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,5)
-
 -- ===== ปุ่ม Float =====
 local floatBtn = Instance.new("TextButton")
 floatBtn.Size = UDim2.new(0.9, -10, 0, 35)
@@ -112,10 +97,56 @@ hopBtn.TextSize = 16
 hopBtn.Parent = mainFrame
 Instance.new("UICorner", hopBtn).CornerRadius = UDim.new(0,12)
 
+-- ===== ปุ่มปิด UI (วงกลม) =====
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.AnchorPoint = Vector2.new(1, 0)
+closeBtn.Position = UDim2.new(1, -5, 0, 0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
+closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 16
+closeBtn.Parent = titleBar
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 15)
+closeCorner.Parent = closeBtn
+
+-- ===== ปุ่มย่อ/ขยาย UI (วงกลม) =====
+local minimized = false
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+minimizeBtn.Position = UDim2.new(1, -40, 0, 0)
+minimizeBtn.AnchorPoint = Vector2.new(1, 0)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(100,100,100)
+minimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+minimizeBtn.Text = "-"
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextSize = 18
+minimizeBtn.Parent = titleBar
+local minimizeCorner = Instance.new("UICorner")
+minimizeCorner.CornerRadius = UDim.new(0, 15)
+minimizeCorner.Parent = minimizeBtn
+
+minimizeBtn.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	if minimized then
+		floatBtn.Visible = false
+		hopBtn.Visible = false
+		mainFrame.Size = UDim2.new(mainFrame.Size.X.Scale, mainFrame.Size.X.Offset, 0, titleBar.Size.Y.Offset)
+		minimizeBtn.Text = "+"
+	else
+		floatBtn.Visible = true
+		hopBtn.Visible = true
+		mainFrame.Size = UDim2.new(0, 220, 0, 150)
+		minimizeBtn.Text = "-"
+	end
+end)
+
 -- ===== ตัวแปร Float =====
 local Floating = false
 local FloatPart
-local FloatHeight = -2 -- <-- ปรับความสูง Float Part ตรงนี้
+local FloatHeight = -2
 local FloatConn
 local char
 local root
@@ -221,7 +252,7 @@ closeBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ===== Hop Server =====
-local function RunHopServer()
+hopBtn.MouseButton1Click:Connect(function()
 	getgenv().ALLOWED_PLACE_ID = 109983668079237
 	getgenv().RETRY_DELAY = 2
 	getgenv().MIN_PLAYERS = 2
@@ -230,8 +261,4 @@ local function RunHopServer()
 	getgenv().SOUND_ID = 91907916191505
 	getgenv().MODEL_SEARCH_SETTINGS = {}
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
-end
-
-hopBtn.MouseButton1Click:Connect(function()
-	RunHopServer()
 end)
