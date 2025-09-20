@@ -1,93 +1,237 @@
--- โหลด BaconLib
-local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/lib"))()
-local version, changelog = lib:GetInfo()
+-- Float UI with Toggle + Close + Drag + Smooth Rainbow Border + Rounded + Hop Server
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
--- สร้างหน้าต่าง
-local window = lib:CreateWindow("Chx Brainrot v"..version)
+-- ===== UI =====
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FloatUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
 
--- ไฟล์เก็บค่า Auto Execute
-local HttpService = game:GetService("HttpService")
-local filename = "AutoExecSettings.txt"
+-- Frame หลัก
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 220, 0, 150) -- <-- ปรับความสูง UI ตรงนี้
+mainFrame.Position = UDim2.new(0.05, 0, 0.25, 0) -- <-- ปรับตำแหน่งสูง/ต่ำตรงนี้
+mainFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
 
--- โหลดค่าจากไฟล์
-local AutoExecFuncs = {
-    Steal = false,
-    FunctionUI = false,
-    HopServer = false,
-    invisible = false -- เพิ่มค่าเริ่มต้น
+-- ทำให้สี่เหลี่ยมวงรี
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 20)
+uiCorner.Parent = mainFrame
+
+-- ===== กรอบสีรุ้งสมูท =====
+local stroke = Instance.new("UIStroke")
+stroke.Thickness = 4
+stroke.Parent = mainFrame
+
+-- สีรุ้ง
+local colors = {
+	Color3.fromRGB(255,0,0),
+	Color3.fromRGB(255,127,0),
+	Color3.fromRGB(255,255,0),
+	Color3.fromRGB(0,255,0),
+	Color3.fromRGB(0,0,255),
+	Color3.fromRGB(75,0,130),
+	Color3.fromRGB(148,0,211)
 }
 
-if pcall(function() readfile(filename) end) then
-    local success, data = pcall(function()
-        return HttpService:JSONDecode(readfile(filename))
-    end)
-    if success and data then
-        -- เช็กว่ามี invisible หรือไม่ ถ้าไม่มีให้เพิ่ม
-        if data.invisible == nil then data.invisible = false end
-        AutoExecFuncs = data
-    end
+-- ไล่สีแบบสมูท
+spawn(function()
+	local t = 0
+	while true do
+		t = t + 0.01
+		if t > 1 then t = 0 end
+
+		local index1 = math.floor(t * #colors) + 1
+		local index2 = index1 + 1
+		if index2 > #colors then index2 = 1 end
+
+		local lerpT = (t * #colors) % 1
+		stroke.Color = colors[index1]:Lerp(colors[index2], lerpT)
+		wait(0.03)
+	end
+end)
+
+-- ===== Title Bar =====
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 30)
+titleBar.Position = UDim2.new(0,0,0,0)
+titleBar.BackgroundTransparency = 1
+titleBar.Parent = mainFrame
+
+local titleText = Instance.new("TextLabel")
+titleText.Size = UDim2.new(1, -10, 1, 0)
+titleText.Position = UDim2.new(0, 5, 0, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "CHX Braintot"
+titleText.Font = Enum.Font.GothamBold
+titleText.TextSize = 18
+titleText.TextColor3 = Color3.fromRGB(255,255,255)
+titleText.TextXAlignment = Enum.TextXAlignment.Left
+titleText.Parent = titleBar
+
+-- ปุ่มปิด UI
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.AnchorPoint = Vector2.new(1, 0) -- ทำให้ตำแหน่งอิงขอบขวา
+closeBtn.Position = UDim2.new(1, -5, 0, 5) -- ปรับ offset ให้อยู่ห่างขอบเล็กน้อย
+closeBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
+closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 16
+closeBtn.Parent = titleBar
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,5)
+
+-- ===== ปุ่ม Float =====
+local floatBtn = Instance.new("TextButton")
+floatBtn.Size = UDim2.new(0.9, -10, 0, 35)
+floatBtn.Position = UDim2.new(0, 10, 0, 40)
+floatBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+floatBtn.TextColor3 = Color3.fromRGB(255,255,255)
+floatBtn.Text = "Float Off"
+floatBtn.Font = Enum.Font.GothamBold
+floatBtn.TextSize = 16
+floatBtn.Parent = mainFrame
+Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(0,12)
+
+-- ===== ปุ่ม Hop Server =====
+local hopBtn = Instance.new("TextButton")
+hopBtn.Size = UDim2.new(0.9, -10, 0, 35)
+hopBtn.Position = UDim2.new(0, 10, 0, 85)
+hopBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+hopBtn.TextColor3 = Color3.fromRGB(255,255,255)
+hopBtn.Text = "Hop Server"
+hopBtn.Font = Enum.Font.GothamBold
+hopBtn.TextSize = 16
+hopBtn.Parent = mainFrame
+Instance.new("UICorner", hopBtn).CornerRadius = UDim.new(0,12)
+
+-- ===== ตัวแปร Float =====
+local Floating = false
+local FloatPart
+local FloatHeight = -2 -- <-- ปรับความสูง Float Part ตรงนี้
+local FloatConn
+local char
+local root
+
+local function updateCharacter()
+	char = player.Character
+	if char then
+		root = char:WaitForChild("HumanoidRootPart")
+	end
 end
 
--- ฟังก์ชันบันทึกค่า
-local function SaveSettings()
-    writefile(filename, HttpService:JSONEncode(AutoExecFuncs))
+updateCharacter()
+player.CharacterAdded:Connect(function()
+	updateCharacter()
+	if Floating then
+		if FloatConn then FloatConn:Disconnect() FloatConn = nil end
+		if FloatPart then FloatPart:Destroy() FloatPart = nil end
+		enableFloat()
+	end
+end)
+
+function enableFloat()
+	if Floating then return end
+	if not root then updateCharacter() end
+	Floating = true
+	floatBtn.Text = "Float On"
+
+	FloatPart = Instance.new("Part")
+	FloatPart.Name = "FloatPad"
+	FloatPart.Parent = workspace
+	FloatPart.Size = Vector3.new(3,0.2,3)
+	FloatPart.Anchored = true
+	FloatPart.Transparency = 0.4
+	FloatPart.Color = Color3.fromRGB(0,150,255)
+	Instance.new("CylinderHandleAdornment", FloatPart)
+
+	FloatConn = RunService.Heartbeat:Connect(function()
+		if FloatPart and root then
+			FloatPart.CFrame = CFrame.new(root.Position.X, root.Position.Y + FloatHeight, root.Position.Z)
+		end
+	end)
 end
 
--- ฟังก์ชันแต่ละปุ่ม
-
-local function Runinvisible()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/steal%20invisible"))()
+function disableFloat()
+	if not Floating then return end
+	Floating = false
+	floatBtn.Text = "Float Off"
+	if FloatConn then FloatConn:Disconnect() FloatConn = nil end
+	if FloatPart then FloatPart:Destroy() FloatPart = nil end
 end
 
-local function RunFunctionUI()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"))()
+-- ===== Drag Function =====
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function update(input)
+	local delta = input.Position - dragStart
+	mainFrame.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
 end
 
+titleBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = mainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		update(input)
+	end
+end)
+
+-- ===== ปุ่มกด =====
+floatBtn.MouseButton1Click:Connect(function()
+	if Floating then
+		disableFloat()
+	else
+		enableFloat()
+	end
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+	disableFloat()
+	screenGui:Destroy()
+end)
+
+-- ===== Hop Server =====
 local function RunHopServer()
-    getgenv().ALLOWED_PLACE_ID = 109983668079237
-    getgenv().RETRY_DELAY = 2
-    getgenv().MIN_PLAYERS = 2
-    getgenv().MAX_PLAYERS = 7
-    getgenv().CHECK_COOLDOWN = 5
-    getgenv().SOUND_ID = 91907916191505
-    getgenv().MODEL_SEARCH_SETTINGS = {}
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
+	getgenv().ALLOWED_PLACE_ID = 109983668079237
+	getgenv().RETRY_DELAY = 2
+	getgenv().MIN_PLAYERS = 2
+	getgenv().MAX_PLAYERS = 7
+	getgenv().CHECK_COOLDOWN = 5
+	getgenv().SOUND_ID = 91907916191505
+	getgenv().MODEL_SEARCH_SETTINGS = {}
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
 end
 
--- สร้างปุ่มปกติ
-local invisibleBtn = lib:CreateButton(window, "👻 invisible", Runinvisible)
-local funcBtn = lib:CreateButton(window, "⚙ Function UI", RunFunctionUI)
-local hopBtn = lib:CreateButton(window, "🌍 Hop Server", RunHopServer)
-
--- สร้าง Toggle สำหรับ Auto Execute
-
-local toggleinvisible = lib:CreateToggle(window, "Auto invisible", AutoExecFuncs.invisible, function(state)
-    AutoExecFuncs.invisible = state
-    SaveSettings()
-end)
-
-local toggleFuncUI = lib:CreateToggle(window, "Auto Function UI", AutoExecFuncs.FunctionUI, function(state)
-    AutoExecFuncs.FunctionUI = state
-    SaveSettings()
-end)
-
-local toggleHop = lib:CreateToggle(window, "Auto Hop Server", AutoExecFuncs.HopServer, function(state)
-    AutoExecFuncs.HopServer = state
-    SaveSettings()
-end)
-
--- ฟังก์ชัน Auto Execute ทีละตัวด้วย delay
-task.spawn(function()
-    if AutoExecFuncs.FunctionUI then
-        task.spawn(RunFunctionUI)
-        task.wait(1)
-    end
-    if AutoExecFuncs.invisible then
-        task.spawn(Runinvisible)
-        task.wait(1)
-    end
-    if AutoExecFuncs.HopServer then
-        task.wait(2)
-        task.spawn(RunHopServer)
-    end
+hopBtn.MouseButton1Click:Connect(function()
+	RunHopServer()
 end)
