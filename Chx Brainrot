@@ -131,8 +131,10 @@ toggleBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ===== Drag Main Frame =====
-local dragging=false
+-- ===== Drag Main Frame (รองรับมือถือและ PC) =====
+local dragging = false
 local dragInput, dragStart, startPos
+
 local function update(input)
     local delta = input.Position - dragStart
     mainFrame.Position = UDim2.new(
@@ -144,27 +146,33 @@ local function update(input)
 end
 
 topBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging=true
-        dragStart=input.Position
-        startPos=mainFrame.Position
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+
         input.Changed:Connect(function()
-            if input.UserInputState==Enum.UserInputState.End then dragging=false end
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
         end)
     end
 end)
 
 topBar.InputChanged:Connect(function(input)
-    if input.UserInputType==Enum.UserInputType.MouseMovement then
-        dragInput=input
+    if input.UserInputType == Enum.UserInputType.MouseMovement or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if input==dragInput and dragging then
+    if input == dragInput and dragging then
         update(input)
     end
 end)
+
 
 -- ===== Close Button =====
 closeBtn.MouseButton1Click:Connect(function()
