@@ -19,46 +19,37 @@ mainFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
-
-local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0,20)
-uiCorner.Parent = mainFrame
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0,20)
 
 -- Rainbow border
 local stroke = Instance.new("UIStroke")
 stroke.Thickness = 4
 stroke.Parent = mainFrame
-local colors = {
-	Color3.fromRGB(255,0,0),
-	Color3.fromRGB(255,127,0),
-	Color3.fromRGB(255,255,0),
-	Color3.fromRGB(0,255,0),
-	Color3.fromRGB(0,0,255),
-	Color3.fromRGB(75,0,130),
-	Color3.fromRGB(148,0,211)
-}
+local colors = {Color3.fromRGB(255,0,0),Color3.fromRGB(255,127,0),Color3.fromRGB(255,255,0),
+                Color3.fromRGB(0,255,0),Color3.fromRGB(0,0,255),Color3.fromRGB(75,0,130),
+                Color3.fromRGB(148,0,211)}
 spawn(function()
-	local t=0
-	while true do
-		t = t+0.01
-		if t>1 then t=0 end
-		local index1 = math.floor(t*#colors)+1
-		local index2 = index1+1
-		if index2>#colors then index2=1 end
-		local lerpT = (t*#colors)%1
-		stroke.Color = colors[index1]:Lerp(colors[index2], lerpT)
-		wait(0.03)
-	end
+    local t=0
+    while true do
+        t = t+0.01
+        if t>1 then t=0 end
+        local index1 = math.floor(t*#colors)+1
+        local index2 = index1+1
+        if index2>#colors then index2=1 end
+        local lerpT = (t*#colors)%1
+        stroke.Color = colors[index1]:Lerp(colors[index2], lerpT)
+        wait(0.03)
+    end
 end)
 
--- Title
+-- Title Bar
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1,0,1,0)
 titleBar.BackgroundTransparency = 1
 titleBar.Parent = mainFrame
 
 local titleText = Instance.new("TextLabel")
-titleText.Size = UDim2.new(1,-30,1,0)
+titleText.Size = UDim2.new(1,-60,1,0)
 titleText.Position = UDim2.new(0,5,0,0)
 titleText.BackgroundTransparency = 1
 titleText.Text = "CHX Brainrot"
@@ -81,7 +72,7 @@ closeBtn.TextSize = 14
 closeBtn.Parent = titleBar
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,12)
 
--- ===== ปุ่ม Minimize/Expand =====
+-- Minimize/Expand button
 local minimizeBtn = Instance.new("TextButton")
 minimizeBtn.Size = UDim2.new(0,25,0,25)
 minimizeBtn.Position = UDim2.new(1,-35,0,5)
@@ -94,76 +85,118 @@ minimizeBtn.TextSize = 18
 minimizeBtn.Parent = titleBar
 Instance.new("UICorner", minimizeBtn).CornerRadius = UDim.new(0,12)
 
--- ===== Container ปุ่มทั้งหมด =====
+-- Container ปุ่มทั้งหมด
 local buttonsContainer = Instance.new("Frame")
-buttonsContainer.Size = UDim2.new(1,0,0,245) -- ปุ่มทั้งหมดรวม
+buttonsContainer.Size = UDim2.new(1,0,0,245)
 buttonsContainer.Position = UDim2.new(0,0,1,0)
 buttonsContainer.BackgroundTransparency = 1
 buttonsContainer.Visible = false
 buttonsContainer.Parent = mainFrame
 
--- ฟังก์ชันสร้างปุ่มเพื่อเรียกใช้งานซ้ำ
+-- ฟังก์ชันสร้างปุ่ม
 local function createButton(text, y, color)
-	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(0.9,-10,0,35)
-	btn.Position = UDim2.new(0,10,0,y)
-	btn.BackgroundColor3 = color
-	btn.TextColor3 = Color3.fromRGB(255,255,255)
-	btn.Text = text
-	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 16
-	btn.Parent = buttonsContainer
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,12)
-	return btn
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.9,-10,0,35)
+    btn.Position = UDim2.new(0,10,0,y)
+    btn.BackgroundColor3 = color
+    btn.TextColor3 = Color3.fromRGB(255,255,255)
+    btn.Text = text
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 16
+    btn.Parent = buttonsContainer
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,12)
+    return btn
 end
 
--- ===== สร้างปุ่มทั้งหมด =====
+-- สร้างปุ่ม
 local floatBtn = createButton("Float Off",0,Color3.fromRGB(50,50,50))
 local autoLaserBtn = createButton("Auto Laser OFF",45,Color3.fromRGB(70,70,70))
 local functionBtn = createButton("Run Function",90,Color3.fromRGB(80,80,80))
 local hopBtn = createButton("Hop Server",135,Color3.fromRGB(50,50,50))
-local autoRunBtn = createButton("Auto Run OFF",180,Color3.fromRGB(60,60,60))
 
 -- ===== Drag UI =====
 local dragging=false
 local dragInput, dragStart, startPos
 local function update(input)
-	local delta=input.Position-dragStart
-	mainFrame.Position = UDim2.new(
-		startPos.X.Scale,
-		startPos.X.Offset+delta.X,
-		startPos.Y.Scale,
-		startPos.Y.Offset+delta.Y
-	)
+    local delta=input.Position-dragStart
+    mainFrame.Position = UDim2.new(
+        startPos.X.Scale,
+        startPos.X.Offset+delta.X,
+        startPos.Y.Scale,
+        startPos.Y.Offset+delta.Y
+    )
 end
 titleBar.InputBegan:Connect(function(input)
-	if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
-		dragging=true
-		dragStart=input.Position
-		startPos=mainFrame.Position
-		input.Changed:Connect(function()
-			if input.UserInputState==Enum.UserInputState.End then dragging=false end
-		end)
-	end
+    if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
+        dragging=true
+        dragStart=input.Position
+        startPos=mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState==Enum.UserInputState.End then dragging=false end
+        end)
+    end
 end)
 titleBar.InputChanged:Connect(function(input)
-	if input.UserInputType==Enum.UserInputType.MouseMovement or input.UserInputType==Enum.UserInputType.Touch then
-		dragInput=input
-	end
+    if input.UserInputType==Enum.UserInputType.MouseMovement or input.UserInputType==Enum.UserInputType.Touch then
+        dragInput=input
+    end
 end)
 UserInputService.InputChanged:Connect(function(input)
-	if input==dragInput and dragging then update(input) end
+    if input==dragInput and dragging then update(input) end
 end)
 
 -- ===== Toggle Minimize =====
 local minimized = true
 minimizeBtn.MouseButton1Click:Connect(function()
-	minimized = not minimized
-	buttonsContainer.Visible = not minimized
-	mainFrame.Size = minimized and UDim2.new(0,220,0,35) or UDim2.new(0,220,0,280)
-	minimizeBtn.Text = minimized and "-" or "+"
+    minimized = not minimized
+    buttonsContainer.Visible = not minimized
+    mainFrame.Size = minimized and UDim2.new(0,220,0,35) or UDim2.new(0,220,0, 35 + buttonsContainer.Size.Y.Offset)
+    minimizeBtn.Text = minimized and "-" or "+"
 end)
 
+-- ===== Float Logic =====
+local Floating = false
+local FloatPart, FloatHeight = nil, -2
+local FloatConn, char, root
+
+local function updateCharacter()
+    char = player.Character
+    if char then
+        root = char:WaitForChild("HumanoidRootPart")
+    end
+end
+updateCharacter()
+player.CharacterAdded:Connect(updateCharacter)
+
+local function enableFloat()
+    if Floating then return end
+    if not root then updateCharacter() end
+    Floating = true
+    floatBtn.Text = "Float On"
+    FloatPart = Instance.new("Part")
+    FloatPart.Size = Vector3.new(3,0.2,3)
+    FloatPart.Anchored = true
+    FloatPart.Transparency = 1
+    FloatPart.Parent = workspace
+    Instance.new("CylinderHandleAdornment", FloatPart)
+    FloatConn = RunService.Heartbeat:Connect(function()
+        if FloatPart and root then
+            FloatPart.CFrame = CFrame.new(root.Position.X, root.Position.Y+FloatHeight, root.Position.Z)
+        end
+    end)
+end
+
+local function disableFloat()
+    if not Floating then return end
+    Floating = false
+    floatBtn.Text = "Float Off"
+    if FloatConn then FloatConn:Disconnect() FloatConn=nil end
+    if FloatPart then FloatPart:Destroy() FloatPart=nil end
+end
+
+floatBtn.MouseButton1Click:Connect(function()
+    if Floating then disableFloat() else enableFloat() end
+end)
 
 -- ===== Auto Laser Logic =====
 local AutoLaser = false
@@ -173,103 +206,92 @@ local Remote = Net:WaitForChild("RE/UseItem")
 local PlayerMouse = require(ReplicatedStorage.Packages.PlayerMouse)
 
 local function getRoot()
-	local char = player.Character
-	if char then return char:FindFirstChild("HumanoidRootPart") end
+    local char = player.Character
+    if char then return char:FindFirstChild("HumanoidRootPart") end
 end
 
 local function equipLaser()
-	local backpack = player:WaitForChild("Backpack")
-	local character = player.Character
-	local humanoid = character:FindFirstChild("Humanoid")
-	local laserTool = backpack:FindFirstChild("Laser Cape") or character:FindFirstChild("Laser Cape")
-	if laserTool and humanoid then
-		if laserTool.Parent ~= character then
-			humanoid:EquipTool(laserTool)
-			RunService.RenderStepped:Wait()
-		end
-		return laserTool
-	end
-	return nil
+    local backpack = player:WaitForChild("Backpack")
+    local character = player.Character
+    local humanoid = character:FindFirstChild("Humanoid")
+    local laserTool = backpack:FindFirstChild("Laser Cape") or character:FindFirstChild("Laser Cape")
+    if laserTool and humanoid then
+        if laserTool.Parent ~= character then
+            humanoid:EquipTool(laserTool)
+            RunService.RenderStepped:Wait()
+        end
+        return laserTool
+    end
+    return nil
 end
 
 local function unequipLaser()
-	local character = player.Character
-	local backpack = player:WaitForChild("Backpack")
-	local laserTool = character:FindFirstChild("Laser Cape")
-	if laserTool then laserTool.Parent=backpack end
+    local character = player.Character
+    local backpack = player:WaitForChild("Backpack")
+    local laserTool = character:FindFirstChild("Laser Cape")
+    if laserTool then laserTool.Parent=backpack end
 end
 
 autoLaserBtn.MouseButton1Click:Connect(function()
-	AutoLaser = not AutoLaser
-	autoLaserBtn.Text = "Auto Laser "..(AutoLaser and "ON" or "OFF")
-	if not AutoLaser then unequipLaser() end
+    AutoLaser = not AutoLaser
+    autoLaserBtn.Text = "Auto Laser "..(AutoLaser and "ON" or "OFF")
+    if not AutoLaser then unequipLaser() end
 end)
 
--- ===== ปุ่ม Function + Auto Run =====
-local AutoRunFunction = false
-if getgenv().AutoRunFunctionState ~= nil then
-	AutoRunFunction = getgenv().AutoRunFunctionState
-	autoRunBtn.Text = "Auto Run "..(AutoRunFunction and "ON" or "OFF")
-end
+-- Main Auto Laser loop
+spawn(function()
+    while true do
+        if AutoLaser then
+            local root = getRoot()
+            if root then
+                local myPos=root.Position
+                local laserTool=equipLaser()
+                if laserTool then
+                    for _, targetPlayer in pairs(Players:GetPlayers()) do
+                        if targetPlayer~=player and targetPlayer.Character and targetPlayer.Character:FindFirstChild("UpperTorso") then
+                            local targetPart=targetPlayer.Character.UpperTorso
+                            if (myPos-targetPart.Position).Magnitude<=LaserDistance then
+                                laserTool:Activate()
+                                local args={targetPart.Position,targetPart}
+                                Remote:FireServer(unpack(args))
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        wait(0.01)
+    end
+end)
 
-local function loadFunction()
-	local url = "https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"
-	local success, funcOrErr = pcall(function()
-		return loadstring(game:HttpGet(url))()
-	end)
-	if not success then
-		warn("Failed to load function:", funcOrErr)
-	end
-end
-
+-- ===== Function Button =====
 functionBtn.MouseButton1Click:Connect(function()
-	loadFunction()
+    local url = "https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"
+    local success, funcOrErr = pcall(function()
+        return loadstring(game:HttpGet(url))()
+    end)
+    if not success then
+        warn("Failed to load function:", funcOrErr)
+    end
 end)
-
 
 -- ===== Hop Server =====
 hopBtn.MouseButton1Click:Connect(function()
-	getgenv().ALLOWED_PLACE_ID = 109983668079237
-	getgenv().RETRY_DELAY = 2
-	getgenv().MIN_PLAYERS = 2
-	getgenv().MAX_PLAYERS = 7
-	getgenv().CHECK_COOLDOWN = 5
-	getgenv().SOUND_ID = 91907916191505
-	getgenv().MODEL_SEARCH_SETTINGS = {}
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
+    getgenv().ALLOWED_PLACE_ID = 109983668079237
+    getgenv().RETRY_DELAY = 2
+    getgenv().MIN_PLAYERS = 2
+    getgenv().MAX_PLAYERS = 7
+    getgenv().CHECK_COOLDOWN = 5
+    getgenv().SOUND_ID = 91907916191505
+    getgenv().MODEL_SEARCH_SETTINGS = {}
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
 end)
 
--- ===== Close cleanup =====
+-- ===== Close Button =====
 closeBtn.MouseButton1Click:Connect(function()
-	AutoLaser=false
-	autoLaserBtn.Text="Auto Laser OFF"
-	unequipLaser()
-	disableFloat()
-	screenGui:Destroy()
-end)
-
--- ===== Main Auto Laser loop =====
-spawn(function()
-	while true do
-		if AutoLaser then
-			local root = getRoot()
-			if root then
-				local myPos=root.Position
-				local laserTool=equipLaser()
-				if laserTool then
-					for _, targetPlayer in pairs(Players:GetPlayers()) do
-						if targetPlayer~=player and targetPlayer.Character and targetPlayer.Character:FindFirstChild("UpperTorso") then
-							local targetPart=targetPlayer.Character.UpperTorso
-							if (myPos-targetPart.Position).Magnitude<=LaserDistance then
-								laserTool:Activate()
-								local args={targetPart.Position,targetPart}
-								Remote:FireServer(unpack(args))
-							end
-						end
-					end
-				end
-			end
-		end
-		wait(0.01)
-	end
+    AutoLaser=false
+    autoLaserBtn.Text="Auto Laser OFF"
+    unequipLaser()
+    disableFloat()
+    screenGui:Destroy()
 end)
