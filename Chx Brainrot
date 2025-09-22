@@ -270,6 +270,70 @@ spawn(function()
 	end
 end)
 
+-- ===== ปุ่ม Function + Auto Run =====
+local functionBtn = Instance.new("TextButton")
+functionBtn.Size = UDim2.new(0.9,-10,0,35)
+functionBtn.Position = UDim2.new(0,10,0,175)
+functionBtn.BackgroundColor3 = Color3.fromRGB(80,80,80)
+functionBtn.TextColor3 = Color3.fromRGB(255,255,255)
+functionBtn.Text = "Run Function"
+functionBtn.Font = Enum.Font.GothamBold
+functionBtn.TextSize = 16
+functionBtn.Parent = mainFrame
+Instance.new("UICorner", functionBtn).CornerRadius = UDim.new(0,12)
+
+local autoRunBtn = Instance.new("TextButton")
+autoRunBtn.Size = UDim2.new(0.9,-10,0,35)
+autoRunBtn.Position = UDim2.new(0,10,0,220)
+autoRunBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+autoRunBtn.TextColor3 = Color3.fromRGB(255,255,255)
+autoRunBtn.Text = "Auto Run OFF"
+autoRunBtn.Font = Enum.Font.GothamBold
+autoRunBtn.TextSize = 16
+autoRunBtn.Parent = mainFrame
+Instance.new("UICorner", autoRunBtn).CornerRadius = UDim.new(0,12)
+
+-- ===== ตัวแปร Auto Run =====
+local AutoRunFunction = false
+
+-- โหลดค่าเก็บไว้ (ถ้ามี) ด้วย get/setgenv
+if getgenv().AutoRunFunctionState ~= nil then
+	AutoRunFunction = getgenv().AutoRunFunctionState
+	autoRunBtn.Text = "Auto Run "..(AutoRunFunction and "ON" or "OFF")
+end
+
+-- ฟังก์ชันโหลดจาก URL
+local function loadFunction()
+	local url = "https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"
+	local success, funcOrErr = pcall(function()
+		return loadstring(game:HttpGet(url))()
+	end)
+	if not success then
+		warn("Failed to load function:", funcOrErr)
+	end
+end
+
+-- ปุ่ม Run Function
+functionBtn.MouseButton1Click:Connect(function()
+	loadFunction()
+end)
+
+-- ปุ่ม Auto Run
+autoRunBtn.MouseButton1Click:Connect(function()
+	AutoRunFunction = not AutoRunFunction
+	autoRunBtn.Text = "Auto Run "..(AutoRunFunction and "ON" or "OFF")
+	getgenv().AutoRunFunctionState = AutoRunFunction
+	if AutoRunFunction then
+		loadFunction()
+	end
+end)
+
+-- ===== รันอัตโนมัติถ้ามีการตั้ง Auto Run =====
+if AutoRunFunction then
+	loadFunction()
+end
+
+
 -- ===== Hop Server =====
 hopBtn.MouseButton1Click:Connect(function()
 	getgenv().ALLOWED_PLACE_ID = 109983668079237
