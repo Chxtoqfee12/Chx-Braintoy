@@ -14,7 +14,7 @@ screenGui.Parent = playerGui
 
 -- Frame หลัก
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 220, 0, 280)
+mainFrame.Size = UDim2.new(0, 220, 0, 35) -- เริ่มแสดงเฉพาะ Top Bar
 mainFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 mainFrame.BorderSizePixel = 0
@@ -53,12 +53,12 @@ end)
 
 -- Title
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1,0,0,30)
+titleBar.Size = UDim2.new(1,0,1,0)
 titleBar.BackgroundTransparency = 1
 titleBar.Parent = mainFrame
 
 local titleText = Instance.new("TextLabel")
-titleText.Size = UDim2.new(1,-10,1,0)
+titleText.Size = UDim2.new(1,-30,1,0)
 titleText.Position = UDim2.new(0,5,0,0)
 titleText.BackgroundTransparency = 1
 titleText.Text = "CHX Brainrot"
@@ -70,120 +70,61 @@ titleText.Parent = titleBar
 
 -- Close button
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0,30,0,30)
-closeBtn.Position = UDim2.new(1,-5,0,0)
+closeBtn.Size = UDim2.new(0,25,0,25)
+closeBtn.Position = UDim2.new(1,-5,0,5)
 closeBtn.AnchorPoint = Vector2.new(1,0)
 closeBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
 closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
 closeBtn.Text = "X"
 closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 16
+closeBtn.TextSize = 14
 closeBtn.Parent = titleBar
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,15)
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,12)
 
--- ===== ปุ่ม Float =====
-local floatBtn = Instance.new("TextButton")
-floatBtn.Size = UDim2.new(0.9,-10,0,35)
-floatBtn.Position = UDim2.new(0,10,0,40)
-floatBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-floatBtn.TextColor3 = Color3.fromRGB(255,255,255)
-floatBtn.Text = "Float Off"
-floatBtn.Font = Enum.Font.GothamBold
-floatBtn.TextSize = 16
-floatBtn.Parent = mainFrame
-Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(0,12)
+-- ===== ปุ่ม Minimize/Expand =====
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0,25,0,25)
+minimizeBtn.Position = UDim2.new(1,-35,0,5)
+minimizeBtn.AnchorPoint = Vector2.new(1,0)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(100,100,100)
+minimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+minimizeBtn.Text = "-"
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextSize = 18
+minimizeBtn.Parent = titleBar
+Instance.new("UICorner", minimizeBtn).CornerRadius = UDim.new(0,12)
 
--- ===== ปุ่ม Auto Laser =====
-local autoLaserBtn = Instance.new("TextButton")
-autoLaserBtn.Size = UDim2.new(0.9,-10,0,35)
-autoLaserBtn.Position = UDim2.new(0,10,0,85)
-autoLaserBtn.BackgroundColor3 = Color3.fromRGB(70,70,70)
-autoLaserBtn.TextColor3 = Color3.fromRGB(255,255,255)
-autoLaserBtn.Text = "Auto Laser OFF"
-autoLaserBtn.Font = Enum.Font.GothamBold
-autoLaserBtn.TextSize = 16
-autoLaserBtn.Parent = mainFrame
-Instance.new("UICorner", autoLaserBtn).CornerRadius = UDim.new(0,12)
+-- ===== Container ปุ่มทั้งหมด =====
+local buttonsContainer = Instance.new("Frame")
+buttonsContainer.Size = UDim2.new(1,0,0,245) -- ปุ่มทั้งหมดรวม
+buttonsContainer.Position = UDim2.new(0,0,1,0)
+buttonsContainer.BackgroundTransparency = 1
+buttonsContainer.Visible = false
+buttonsContainer.Parent = mainFrame
 
--- ===== ปุ่ม Run Function =====
-local functionBtn = Instance.new("TextButton")
-functionBtn.Size = UDim2.new(0.9,-10,0,35)
-functionBtn.Position = UDim2.new(0,10,0,130)
-functionBtn.BackgroundColor3 = Color3.fromRGB(80,80,80)
-functionBtn.TextColor3 = Color3.fromRGB(255,255,255)
-functionBtn.Text = "Run Function"
-functionBtn.Font = Enum.Font.GothamBold
-functionBtn.TextSize = 16
-functionBtn.Parent = mainFrame
-Instance.new("UICorner", functionBtn).CornerRadius = UDim.new(0,12)
-
--- ===== ปุ่ม Hop Server =====
-local hopBtn = Instance.new("TextButton")
-hopBtn.Size = UDim2.new(0.9,-10,0,35)
-hopBtn.Position = UDim2.new(0,10,0,175)
-hopBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-hopBtn.TextColor3 = Color3.fromRGB(255,255,255)
-hopBtn.Text = "Hop Server"
-hopBtn.Font = Enum.Font.GothamBold
-hopBtn.TextSize = 16
-hopBtn.Parent = mainFrame
-Instance.new("UICorner", hopBtn).CornerRadius = UDim.new(0,12)
-
--- ===== ปุ่ม Auto Run แยกด้านล่าง =====
-local autoRunBtn = Instance.new("TextButton")
-autoRunBtn.Size = UDim2.new(0.9,-10,0,35)
-autoRunBtn.Position = UDim2.new(0,10,0,220)
-autoRunBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
-autoRunBtn.TextColor3 = Color3.fromRGB(255,255,255)
-autoRunBtn.Text = "Auto Run OFF"
-autoRunBtn.Font = Enum.Font.GothamBold
-autoRunBtn.TextSize = 16
-autoRunBtn.Parent = mainFrame
-Instance.new("UICorner", autoRunBtn).CornerRadius = UDim.new(0,12)
-
--- ===== ตัวแปร Float =====
-local Floating = false
-local FloatPart, FloatHeight = nil, -2
-local FloatConn, char, root
-
-local function updateCharacter()
-	char = player.Character
-	if char then
-		root = char:WaitForChild("HumanoidRootPart")
-	end
-end
-updateCharacter()
-player.CharacterAdded:Connect(updateCharacter)
-
-function enableFloat()
-	if Floating then return end
-	if not root then updateCharacter() end
-	Floating = true
-	floatBtn.Text = "Float On"
-
-	FloatPart = Instance.new("Part")
-	FloatPart.Size = Vector3.new(3,0.2,3)
-	FloatPart.Anchored = true
-	FloatPart.Transparency = 1
-	FloatPart.Parent = workspace
-	Instance.new("CylinderHandleAdornment", FloatPart)
-
-	FloatConn = RunService.Heartbeat:Connect(function()
-		if FloatPart and root then
-			FloatPart.CFrame = CFrame.new(root.Position.X, root.Position.Y+FloatHeight, root.Position.Z)
-		end
-	end)
+-- ฟังก์ชันสร้างปุ่มเพื่อเรียกใช้งานซ้ำ
+local function createButton(text, y, color)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0.9,-10,0,35)
+	btn.Position = UDim2.new(0,10,0,y)
+	btn.BackgroundColor3 = color
+	btn.TextColor3 = Color3.fromRGB(255,255,255)
+	btn.Text = text
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 16
+	btn.Parent = buttonsContainer
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,12)
+	return btn
 end
 
-function disableFloat()
-	if not Floating then return end
-	Floating = false
-	floatBtn.Text = "Float Off"
-	if FloatConn then FloatConn:Disconnect() FloatConn=nil end
-	if FloatPart then FloatPart:Destroy() FloatPart=nil end
-end
+-- ===== สร้างปุ่มทั้งหมด =====
+local floatBtn = createButton("Float Off",0,Color3.fromRGB(50,50,50))
+local autoLaserBtn = createButton("Auto Laser OFF",45,Color3.fromRGB(70,70,70))
+local functionBtn = createButton("Run Function",90,Color3.fromRGB(80,80,80))
+local hopBtn = createButton("Hop Server",135,Color3.fromRGB(50,50,50))
+local autoRunBtn = createButton("Auto Run OFF",180,Color3.fromRGB(60,60,60))
 
--- ===== Drag Function =====
+-- ===== Drag UI =====
 local dragging=false
 local dragInput, dragStart, startPos
 local function update(input)
@@ -214,10 +155,15 @@ UserInputService.InputChanged:Connect(function(input)
 	if input==dragInput and dragging then update(input) end
 end)
 
--- ===== ปุ่มกด =====
-floatBtn.MouseButton1Click:Connect(function()
-	if Floating then disableFloat() else enableFloat() end
+-- ===== Toggle Minimize =====
+local minimized = true
+minimizeBtn.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	buttonsContainer.Visible = not minimized
+	mainFrame.Size = minimized and UDim2.new(0,220,0,35) or UDim2.new(0,220,0,280)
+	minimizeBtn.Text = minimized and "-" or "+"
 end)
+
 
 -- ===== Auto Laser Logic =====
 local AutoLaser = false
@@ -280,18 +226,6 @@ functionBtn.MouseButton1Click:Connect(function()
 	loadFunction()
 end)
 
-autoRunBtn.MouseButton1Click:Connect(function()
-	AutoRunFunction = not AutoRunFunction
-	autoRunBtn.Text = "Auto Run "..(AutoRunFunction and "ON" or "OFF")
-	getgenv().AutoRunFunctionState = AutoRunFunction
-	if AutoRunFunction then
-		loadFunction()
-	end
-end)
-
-if AutoRunFunction then
-	loadFunction()
-end
 
 -- ===== Hop Server =====
 hopBtn.MouseButton1Click:Connect(function()
