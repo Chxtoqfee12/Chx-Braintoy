@@ -39,6 +39,8 @@ topBar.Size = UDim2.new(1,0,0,35)
 topBar.Position = UDim2.new(0,0,0,0)
 topBar.BackgroundTransparency = 1
 topBar.Parent = mainFrame
+topBar.Active = true       -- สำคัญ! ทำให้มือถือลากได้
+topBar.Selectable = true   -- สำคัญ! ทำให้มือถือลากได้
 
 -- Title
 local titleText = Instance.new("TextLabel")
@@ -112,25 +114,18 @@ local uiExpanded = true
 toggleBtn.MouseButton1Click:Connect(function()
     uiExpanded = not uiExpanded
     if uiExpanded then
-        -- ขยาย UI
         mainFrame.Size = UDim2.new(0,220,0,215)
         uiFrame.Visible = true
-        for _,btn in ipairs(buttons) do
-            btn.Visible = true
-        end
+        for _,btn in ipairs(buttons) do btn.Visible = true end
         toggleBtn.Text = "-"
     else
-        -- พับเหลือแต่ TopBar
         mainFrame.Size = UDim2.new(0,220,0,35)
         uiFrame.Visible = false
-        for _,btn in ipairs(buttons) do
-            btn.Visible = false
-        end
+        for _,btn in ipairs(buttons) do btn.Visible = false end
         toggleBtn.Text = "+"
     end
 end)
 
--- ===== Drag Main Frame =====
 -- ===== Drag Main Frame (รองรับมือถือและ PC) =====
 local dragging = false
 local dragInput, dragStart, startPos
@@ -173,11 +168,11 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
-
 -- ===== Close Button =====
 closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
+
 
 
 
