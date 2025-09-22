@@ -1,11 +1,3 @@
--- Services
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UserInputService = game:GetService("UserInputService")
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
 -- ===== UI =====
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "FloatUI"
@@ -44,7 +36,7 @@ end)
 
 -- Title Bar
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1,0,1,0)
+titleBar.Size = UDim2.new(1,0,0,35)
 titleBar.BackgroundTransparency = 1
 titleBar.Parent = mainFrame
 
@@ -87,8 +79,8 @@ Instance.new("UICorner", minimizeBtn).CornerRadius = UDim.new(0,12)
 
 -- Container ปุ่มทั้งหมด
 local buttonsContainer = Instance.new("Frame")
-buttonsContainer.Size = UDim2.new(1,0,0,245)
-buttonsContainer.Position = UDim2.new(0,0,1,0)
+buttonsContainer.Size = UDim2.new(1,0,0,185) -- ปรับให้พอดีกับจำนวนปุ่ม
+buttonsContainer.Position = UDim2.new(0,0,0,35)
 buttonsContainer.BackgroundTransparency = 1
 buttonsContainer.Visible = false
 buttonsContainer.Parent = mainFrame
@@ -96,8 +88,8 @@ buttonsContainer.Parent = mainFrame
 -- ฟังก์ชันสร้างปุ่ม
 local function createButton(text, y, color)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.9,-10,0,35)
-    btn.Position = UDim2.new(0,10,0,y)
+    btn.Size = UDim2.new(0.9,0,0,35)
+    btn.Position = UDim2.new(0.05,0,0,y)
     btn.BackgroundColor3 = color
     btn.TextColor3 = Color3.fromRGB(255,255,255)
     btn.Text = text
@@ -114,7 +106,7 @@ local autoLaserBtn = createButton("Auto Laser OFF",45,Color3.fromRGB(70,70,70))
 local functionBtn = createButton("Run Function",90,Color3.fromRGB(80,80,80))
 local hopBtn = createButton("Hop Server",135,Color3.fromRGB(50,50,50))
 
--- ===== Drag UI =====
+-- Drag UI
 local dragging=false
 local dragInput, dragStart, startPos
 local function update(input)
@@ -145,14 +137,15 @@ UserInputService.InputChanged:Connect(function(input)
     if input==dragInput and dragging then update(input) end
 end)
 
--- ===== Toggle Minimize =====
+-- Toggle Minimize
 local minimized = true
 minimizeBtn.MouseButton1Click:Connect(function()
     minimized = not minimized
     buttonsContainer.Visible = not minimized
-    mainFrame.Size = minimized and UDim2.new(0,220,0,35) or UDim2.new(0,220,0, 35 + buttonsContainer.Size.Y.Offset)
+    mainFrame.Size = minimized and UDim2.new(0,220,0,35) or UDim2.new(0,220,0,35 + buttonsContainer.Size.Y.Offset)
     minimizeBtn.Text = minimized and "-" or "+"
 end)
+
 
 -- ===== Float Logic =====
 local Floating = false
