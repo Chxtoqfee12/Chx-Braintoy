@@ -1,45 +1,46 @@
--- ===== UI =====
+-- ===== Services =====
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- ===== ScreenGui =====
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FloatUI"
+screenGui.Name = "CHX_GUI"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- Frame หลัก
+-- ===== Main Frame =====
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 220, 0, 35) -- เริ่มแสดงเฉพาะ Top Bar
-mainFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
+mainFrame.Size = UDim2.new(0,220,0,215)
+mainFrame.Position = UDim2.new(0.05,0,0.25,0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
 Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0,20)
 
--- Rainbow border
-local stroke = Instance.new("UIStroke")
-stroke.Thickness = 4
-stroke.Parent = mainFrame
-local colors = {Color3.fromRGB(255,0,0),Color3.fromRGB(255,127,0),Color3.fromRGB(255,255,0),
-                Color3.fromRGB(0,255,0),Color3.fromRGB(0,0,255),Color3.fromRGB(75,0,130),
-                Color3.fromRGB(148,0,211)}
-spawn(function()
-    local t=0
-    while true do
-        t = t+0.01
-        if t>1 then t=0 end
-        local index1 = math.floor(t*#colors)+1
-        local index2 = index1+1
-        if index2>#colors then index2=1 end
-        local lerpT = (t*#colors)%1
-        stroke.Color = colors[index1]:Lerp(colors[index2], lerpT)
-        wait(0.03)
-    end
+-- ===== Rainbow Border =====
+local border = Instance.new("UIStroke")
+border.Parent = mainFrame
+border.Thickness = 3
+border.Color = Color3.fromHSV(0,1,1)
+border.LineJoinMode = Enum.LineJoinMode.Round
+local hue = 0
+RunService.RenderStepped:Connect(function()
+    hue = (hue + 0.002) % 1
+    border.Color = Color3.fromHSV(hue,1,1)
 end)
 
--- Title Bar
-local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1,0,0,35)
-titleBar.BackgroundTransparency = 1
-titleBar.Parent = mainFrame
+-- ===== Top Bar =====
+local topBar = Instance.new("Frame")
+topBar.Size = UDim2.new(1,0,0,35)
+topBar.Position = UDim2.new(0,0,0,0)
+topBar.BackgroundTransparency = 1
+topBar.Parent = mainFrame
 
+-- Title
 local titleText = Instance.new("TextLabel")
 titleText.Size = UDim2.new(1,-60,1,0)
 titleText.Position = UDim2.new(0,5,0,0)
@@ -49,9 +50,9 @@ titleText.Font = Enum.Font.GothamBold
 titleText.TextSize = 18
 titleText.TextColor3 = Color3.fromRGB(255,255,255)
 titleText.TextXAlignment = Enum.TextXAlignment.Left
-titleText.Parent = titleBar
+titleText.Parent = topBar
 
--- Close button
+-- Close Button
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0,25,0,25)
 closeBtn.Position = UDim2.new(1,-5,0,5)
@@ -61,31 +62,31 @@ closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
 closeBtn.Text = "X"
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextSize = 14
-closeBtn.Parent = titleBar
+closeBtn.Parent = topBar
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,12)
 
--- Minimize/Expand button
-local minimizeBtn = Instance.new("TextButton")
-minimizeBtn.Size = UDim2.new(0,25,0,25)
-minimizeBtn.Position = UDim2.new(1,-35,0,5)
-minimizeBtn.AnchorPoint = Vector2.new(1,0)
-minimizeBtn.BackgroundColor3 = Color3.fromRGB(100,100,100)
-minimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-minimizeBtn.Text = "-"
-minimizeBtn.Font = Enum.Font.GothamBold
-minimizeBtn.TextSize = 18
-minimizeBtn.Parent = titleBar
-Instance.new("UICorner", minimizeBtn).CornerRadius = UDim.new(0,12)
+-- Toggle Button (พับ/ขยาย UI)
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0,25,0,25)
+toggleBtn.Position = UDim2.new(1,-35,0,5)
+toggleBtn.AnchorPoint = Vector2.new(1,0)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(100,100,100)
+toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+toggleBtn.Text = "-"
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 18
+toggleBtn.Parent = topBar
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0,12)
 
--- Container ปุ่มทั้งหมด
-local buttonsContainer = Instance.new("Frame")
-buttonsContainer.Size = UDim2.new(1,0,0,185) -- ปรับให้พอดีกับจำนวนปุ่ม
-buttonsContainer.Position = UDim2.new(0,0,0,35)
-buttonsContainer.BackgroundTransparency = 1
-buttonsContainer.Visible = false
-buttonsContainer.Parent = mainFrame
+-- ===== UI Container =====
+local uiFrame = Instance.new("Frame")
+uiFrame.Size = UDim2.new(1,0,1,-35)
+uiFrame.Position = UDim2.new(0,0,0,35)
+uiFrame.BackgroundTransparency = 1
+uiFrame.Parent = mainFrame
 
--- ฟังก์ชันสร้างปุ่ม
+-- ===== Buttons =====
+local buttons = {}
 local function createButton(text, y, color)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0.9,0,0,35)
@@ -95,31 +96,55 @@ local function createButton(text, y, color)
     btn.Text = text
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 16
-    btn.Parent = buttonsContainer
+    btn.Parent = uiFrame
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,12)
+    table.insert(buttons, btn)
     return btn
 end
 
--- สร้างปุ่ม
 local floatBtn = createButton("Float Off",0,Color3.fromRGB(50,50,50))
 local autoLaserBtn = createButton("Auto Laser OFF",45,Color3.fromRGB(70,70,70))
 local functionBtn = createButton("Run Function",90,Color3.fromRGB(80,80,80))
 local hopBtn = createButton("Hop Server",135,Color3.fromRGB(50,50,50))
 
--- Drag UI
+-- ===== Toggle UI Visibility (Mini Mode) =====
+local uiExpanded = true
+toggleBtn.MouseButton1Click:Connect(function()
+    uiExpanded = not uiExpanded
+    if uiExpanded then
+        -- ขยาย UI
+        mainFrame.Size = UDim2.new(0,220,0,215)
+        uiFrame.Visible = true
+        for _,btn in ipairs(buttons) do
+            btn.Visible = true
+        end
+        toggleBtn.Text = "-"
+    else
+        -- พับเหลือแต่ TopBar
+        mainFrame.Size = UDim2.new(0,220,0,35)
+        uiFrame.Visible = false
+        for _,btn in ipairs(buttons) do
+            btn.Visible = false
+        end
+        toggleBtn.Text = "+"
+    end
+end)
+
+-- ===== Drag Main Frame =====
 local dragging=false
 local dragInput, dragStart, startPos
 local function update(input)
-    local delta=input.Position-dragStart
+    local delta = input.Position - dragStart
     mainFrame.Position = UDim2.new(
         startPos.X.Scale,
-        startPos.X.Offset+delta.X,
+        startPos.X.Offset + delta.X,
         startPos.Y.Scale,
-        startPos.Y.Offset+delta.Y
+        startPos.Y.Offset + delta.Y
     )
 end
-titleBar.InputBegan:Connect(function(input)
-    if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
+
+topBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging=true
         dragStart=input.Position
         startPos=mainFrame.Position
@@ -128,23 +153,26 @@ titleBar.InputBegan:Connect(function(input)
         end)
     end
 end)
-titleBar.InputChanged:Connect(function(input)
-    if input.UserInputType==Enum.UserInputType.MouseMovement or input.UserInputType==Enum.UserInputType.Touch then
+
+topBar.InputChanged:Connect(function(input)
+    if input.UserInputType==Enum.UserInputType.MouseMovement then
         dragInput=input
     end
 end)
+
 UserInputService.InputChanged:Connect(function(input)
-    if input==dragInput and dragging then update(input) end
+    if input==dragInput and dragging then
+        update(input)
+    end
 end)
 
--- Toggle Minimize
-local minimized = true
-minimizeBtn.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    buttonsContainer.Visible = not minimized
-    mainFrame.Size = minimized and UDim2.new(0,220,0,35) or UDim2.new(0,220,0,35 + buttonsContainer.Size.Y.Offset)
-    minimizeBtn.Text = minimized and "-" or "+"
+-- ===== Close Button =====
+closeBtn.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
 end)
+
+
+
 
 
 -- ===== Float Logic =====
