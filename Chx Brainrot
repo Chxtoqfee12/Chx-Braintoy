@@ -314,7 +314,7 @@ hopBtn.MouseButton1Click:Connect(function()
     spawn(function()
         while true do
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
-            wait(1)  -- รอ 1 วินาทีก่อนรันรอบถัดไป
+            wait(0.5)  -- รอ 1 วินาทีก่อนรันรอบถัดไป
         end
     end)
 end)
