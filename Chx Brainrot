@@ -301,6 +301,7 @@ end)
 
 -- ===== Hop Server =====
 hopBtn.MouseButton1Click:Connect(function()
+    -- ตั้งค่าตัวแปร global
     getgenv().ALLOWED_PLACE_ID = 109983668079237
     getgenv().RETRY_DELAY = 2
     getgenv().MIN_PLAYERS = 2
@@ -308,7 +309,14 @@ hopBtn.MouseButton1Click:Connect(function()
     getgenv().CHECK_COOLDOWN = 5
     getgenv().SOUND_ID = 91907916191505
     getgenv().MODEL_SEARCH_SETTINGS = {}
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
+
+    -- เริ่ม loop Hop Server
+    spawn(function()
+        while true do
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
+            wait(1)  -- รอ 1 วินาทีก่อนรันรอบถัดไป
+        end
+    end)
 end)
 
 -- ===== Close Button =====
