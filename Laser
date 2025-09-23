@@ -204,9 +204,10 @@ screenGui.AncestryChanged:Connect(function(_, parent)
 end)
 
 -- Main Auto Laser loop
--- ===== Auto Laser loop ปรับปรุง =====
+-- ===== Auto Laser loop ปรับปรุง (คนใกล้สุด + ห้ามยิง ignoreList) =====
+local currentTarget = nil
+
 spawn(function()
-    local lastTarget = nil
     while true do
         if AutoLaser then
             local root = getRoot()
@@ -214,49 +215,42 @@ spawn(function()
                 local myPos = root.Position
                 local laserTool = equipLaser()
                 if laserTool then
-                    local candidates = {}
+                    local closestTarget = nil
+                    local closestDist = math.huge
+
+                    -- หาคนใกล้ที่สุดที่ไม่อยู่ใน ignoreList
                     for _, targetPlayer in pairs(Players:GetPlayers()) do
                         if targetPlayer ~= player 
-                        and not ignoreList[targetPlayer.Name]
+                        and not ignoreList[targetPlayer.Name] -- ห้ามยิงคนใน ignoreList
                         and targetPlayer.Character
                         and targetPlayer.Character:FindFirstChild("UpperTorso") then
                             local targetPart = targetPlayer.Character.UpperTorso
-                            if (myPos - targetPart.Position).Magnitude <= LaserDistance then
-                                table.insert(candidates, targetPlayer)
+                            local dist = (myPos - targetPart.Position).Magnitude
+                            if dist <= LaserDistance and dist < closestDist then
+                                closestDist = dist
+                                closestTarget = targetPlayer
                             end
                         end
                     end
 
-                    -- เลือกเป้าหมาย
-                    local target
-                    if #candidates == 1 then
-                        target = candidates[1]
-                    elseif #candidates > 1 then
-                        -- สุ่มคนใหม่ที่ไม่ใช่คนเดิม
-                        local temp = {}
-                        for _, p in pairs(candidates) do
-                            if p ~= lastTarget then table.insert(temp, p) end
-                        end
-                        if #temp > 0 then
-                            target = temp[math.random(1,#temp)]
-                        else
-                            target = candidates[math.random(1,#candidates)]
-                        end
+                    -- อัปเดตเป้าหมายปัจจุบัน
+                    if closestTarget ~= currentTarget then
+                        currentTarget = closestTarget
                     end
 
-                    -- ยิงเป้าหมาย
-                    if target and target.Character and target.Character:FindFirstChild("UpperTorso") then
-                        local targetPart = target.Character.UpperTorso
+                    -- ยิงเป้าหมายถ้ามี
+                    if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("UpperTorso") then
+                        local targetPart = currentTarget.Character.UpperTorso
                         laserTool:Activate()
                         Remote:FireServer(targetPart.Position, targetPart)
-                        lastTarget = target
                     end
                 end
             end
         end
-        task.wait(0.01) -- ลดการหน่วงเล็กน้อย
+        task.wait(0.01) -- เว้นเวลาเล็กน้อย
     end
 end)
+
 
 
 -- โหลดครั้งแรก
