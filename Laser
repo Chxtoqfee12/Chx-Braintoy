@@ -11,8 +11,8 @@ screenGui.Name = "AutoLaserUI"
 screenGui.ResetOnSpawn = false
 
 local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.Size = UDim2.new(0, 160, 0, 60)
-mainFrame.Position = UDim2.new(0.4, 0, 0.4, 0)
+mainFrame.Size = UDim2.new(0, 200, 0, 260)
+mainFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
@@ -30,7 +30,7 @@ stroke.Color = Color3.fromRGB(255, 0, 0)
 
 -- ปุ่ม Auto Laser
 local autoLaserBtn = Instance.new("TextButton", mainFrame)
-autoLaserBtn.Size = UDim2.new(1, -20, 1, -20)
+autoLaserBtn.Size = UDim2.new(1, -20, 0, 40)
 autoLaserBtn.Position = UDim2.new(0, 10, 0, 10)
 autoLaserBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 autoLaserBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -41,7 +41,44 @@ autoLaserBtn.AutoButtonColor = false
 local btnCorner = Instance.new("UICorner", autoLaserBtn)
 btnCorner.CornerRadius = UDim.new(0, 8)
 
--- ===== Drag Support (PC + Mobile) =====
+-- Label รายชื่อ
+local playerListLabel = Instance.new("TextLabel", mainFrame)
+playerListLabel.Size = UDim2.new(1, -20, 0, 20)
+playerListLabel.Position = UDim2.new(0, 10, 0, 60)
+playerListLabel.BackgroundTransparency = 1
+playerListLabel.Text = "เลือกผู้เล่นที่ห้ามยิง:"
+playerListLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+playerListLabel.Font = Enum.Font.Gotham
+playerListLabel.TextSize = 14
+playerListLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Scroll รายชื่อ
+local playerListFrame = Instance.new("ScrollingFrame", mainFrame)
+playerListFrame.Size = UDim2.new(1, -20, 0, 140)
+playerListFrame.Position = UDim2.new(0, 10, 0, 85)
+playerListFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+playerListFrame.BorderSizePixel = 0
+playerListFrame.ScrollBarThickness = 6
+local listCorner = Instance.new("UICorner", playerListFrame)
+listCorner.CornerRadius = UDim.new(0, 8)
+
+local listLayout = Instance.new("UIListLayout", playerListFrame)
+listLayout.Padding = UDim.new(0, 4)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- ปุ่ม Refresh
+local refreshBtn = Instance.new("TextButton", mainFrame)
+refreshBtn.Size = UDim2.new(1, -20, 0, 30)
+refreshBtn.Position = UDim2.new(0, 10, 0, 230)
+refreshBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+refreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+refreshBtn.Font = Enum.Font.GothamBold
+refreshBtn.TextSize = 14
+refreshBtn.Text = "🔄 Refresh Players"
+local refreshCorner = Instance.new("UICorner", refreshBtn)
+refreshCorner.CornerRadius = UDim.new(0, 6)
+
+-- ===== Drag Support =====
 local dragging, dragInput, dragStart, startPos
 local function update(input)
     local delta = input.Position - dragStart
@@ -50,30 +87,21 @@ local function update(input)
         startPos.Y.Scale, startPos.Y.Offset + delta.Y
     )
 end
-
 mainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
         startPos = mainFrame.Position
         input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
         end)
     end
 end)
-
 mainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
 end)
-
 UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
-    end
+    if input == dragInput and dragging then update(input) end
 end)
 
 -- ===== Rainbow Border =====
@@ -93,13 +121,11 @@ local AutoLaser = false
 local LaserDistance = 60
 local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net")
 local Remote = Net:WaitForChild("RE/UseItem")
-local PlayerMouse = require(ReplicatedStorage.Packages.PlayerMouse)
 
 local function getRoot()
     local char = player.Character
     if char then return char:FindFirstChild("HumanoidRootPart") end
 end
-
 local function equipLaser()
     local backpack = player:WaitForChild("Backpack")
     local character = player.Character
@@ -114,13 +140,50 @@ local function equipLaser()
     end
     return nil
 end
-
 local function unequipLaser()
     local character = player.Character
     local backpack = player:WaitForChild("Backpack")
     local laserTool = character:FindFirstChild("Laser Cape")
     if laserTool then laserTool.Parent = backpack end
 end
+
+-- รายชื่อที่ห้ามยิง
+local ignoreList = {}
+
+-- ฟังก์ชันสร้างปุ่มเลือกผู้เล่น
+local function createPlayerButtons()
+    playerListFrame:ClearAllChildren()
+    local listLayout = Instance.new("UIListLayout", playerListFrame)
+    listLayout.Padding = UDim.new(0, 4)
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= player then
+            local btn = Instance.new("TextButton", playerListFrame)
+            btn.Size = UDim2.new(1, -10, 0, 25)
+            btn.BackgroundColor3 = ignoreList[plr.Name] and Color3.fromRGB(200, 80, 80) or Color3.fromRGB(60, 60, 60)
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            btn.Text = plr.Name
+            btn.Font = Enum.Font.Gotham
+            btn.TextSize = 14
+            btn.AutoButtonColor = false
+
+            local c = Instance.new("UICorner", btn)
+            c.CornerRadius = UDim.new(0, 6)
+
+            btn.MouseButton1Click:Connect(function()
+                ignoreList[plr.Name] = not ignoreList[plr.Name]
+                btn.BackgroundColor3 = ignoreList[plr.Name] and Color3.fromRGB(200, 80, 80) or Color3.fromRGB(60, 60, 60)
+            end)
+        end
+    end
+    playerListFrame.CanvasSize = UDim2.new(0, 0, 0, #Players:GetPlayers()*30)
+end
+
+-- ปุ่ม Refresh
+refreshBtn.MouseButton1Click:Connect(function()
+    createPlayerButtons()
+end)
 
 -- ปุ่ม Auto Laser
 autoLaserBtn.MouseButton1Click:Connect(function()
@@ -150,18 +213,23 @@ spawn(function()
                 local laserTool = equipLaser()
                 if laserTool then
                     for _, targetPlayer in pairs(Players:GetPlayers()) do
-                        if targetPlayer ~= player and targetPlayer.Character and targetPlayer.Character:FindFirstChild("UpperTorso") then
+                        if targetPlayer ~= player 
+                        and not ignoreList[targetPlayer.Name]
+                        and targetPlayer.Character 
+                        and targetPlayer.Character:FindFirstChild("UpperTorso") then
                             local targetPart = targetPlayer.Character.UpperTorso
                             if (myPos - targetPart.Position).Magnitude <= LaserDistance then
                                 laserTool:Activate()
-                                local args = {targetPart.Position, targetPart}
-                                Remote:FireServer(unpack(args))
+                                Remote:FireServer(targetPart.Position, targetPart)
                             end
                         end
                     end
                 end
             end
         end
-        task.wait(0.01)
+        task.wait(0.05)
     end
 end)
+
+-- โหลดครั้งแรก
+createPlayerButtons()
