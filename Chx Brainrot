@@ -127,6 +127,7 @@ end)
 -- ===== Drag Main Frame =====
 local dragging = false
 local dragInput, dragStart, startPos
+
 local function update(input)
     local delta = input.Position - dragStart
     mainFrame.Position = UDim2.new(
@@ -136,11 +137,15 @@ local function update(input)
         startPos.Y.Offset + delta.Y
     )
 end
+
+-- เริ่มลาก
 topBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
         startPos = mainFrame.Position
+        dragInput = input -- เซ็ต dragInput เพื่อใช้กับ InputChanged
+
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -148,16 +153,20 @@ topBar.InputBegan:Connect(function(input)
         end)
     end
 end)
+
+-- อัปเดตตำแหน่งขณะลาก
 topBar.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
+    if input == dragInput then
         update(input)
     end
 end)
+
 UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
+    if input == dragInput then
         update(input)
     end
 end)
+
 
 -- ===== State Variables =====
 local Floating = false
