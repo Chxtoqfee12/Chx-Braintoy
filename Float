@@ -101,7 +101,7 @@ local function enableFloat()
     FloatPart = Instance.new("Part")
     FloatPart.Size = Vector3.new(3,0.2,3)
     FloatPart.Anchored = true
-    FloatPart.Transparency = 1
+    FloatPart.Transparency = 2
     FloatPart.Parent = workspace
 
     FloatConn = RunService.Heartbeat:Connect(function()
