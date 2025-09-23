@@ -101,6 +101,7 @@ local function enableFloat()
     if not root then updateCharacter() end
     Floating = true
     floatBtn.Text = "Float On"
+    floatBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 100) -- สีเขียวตอนเปิด
 
     FloatPart = Instance.new("Part")
     FloatPart.Size = Vector3.new(3,0.2,3)
@@ -119,9 +120,11 @@ local function disableFloat()
     if not Floating then return end
     Floating = false
     floatBtn.Text = "Float Off"
+    floatBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- สีเดิมตอนปิด
     if FloatConn then FloatConn:Disconnect() FloatConn=nil end
     if FloatPart then FloatPart:Destroy() FloatPart=nil end
 end
+
 
 floatBtn.MouseButton1Click:Connect(function()
     if Floating then
