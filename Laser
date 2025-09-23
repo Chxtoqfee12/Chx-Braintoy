@@ -1,0 +1,161 @@
+-- ===== Services =====
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
+-- ===== UI =====
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "AutoLaserUI"
+screenGui.ResetOnSpawn = false
+
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 160, 0, 60)
+mainFrame.Position = UDim2.new(0.4, 0, 0.4, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = false
+mainFrame.ClipsDescendants = true
+
+-- มุมโค้งมน
+local corner = Instance.new("UICorner", mainFrame)
+corner.CornerRadius = UDim.new(0, 12)
+
+-- เส้นขอบสายรุ้ง
+local stroke = Instance.new("UIStroke", mainFrame)
+stroke.Thickness = 3
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Color = Color3.fromRGB(255, 0, 0)
+
+-- ปุ่ม Auto Laser
+local autoLaserBtn = Instance.new("TextButton", mainFrame)
+autoLaserBtn.Size = UDim2.new(1, -20, 1, -20)
+autoLaserBtn.Position = UDim2.new(0, 10, 0, 10)
+autoLaserBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+autoLaserBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoLaserBtn.Font = Enum.Font.GothamBold
+autoLaserBtn.TextSize = 16
+autoLaserBtn.Text = "Auto Laser OFF"
+autoLaserBtn.AutoButtonColor = false
+local btnCorner = Instance.new("UICorner", autoLaserBtn)
+btnCorner.CornerRadius = UDim.new(0, 8)
+
+-- ===== Drag Support (PC + Mobile) =====
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    mainFrame.Position = UDim2.new(
+        startPos.X.Scale, startPos.X.Offset + delta.X,
+        startPos.Y.Scale, startPos.Y.Offset + delta.Y
+    )
+end
+
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+mainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- ===== Rainbow Border =====
+task.spawn(function()
+    local t = 0
+    while screenGui.Parent do
+        t = t + RunService.Heartbeat:Wait()
+        local r = math.sin(t*2) * 127 + 128
+        local g = math.sin(t*2 + 2) * 127 + 128
+        local b = math.sin(t*2 + 4) * 127 + 128
+        stroke.Color = Color3.fromRGB(r, g, b)
+    end
+end)
+
+-- ===== Auto Laser Logic =====
+local AutoLaser = false
+local LaserDistance = 60
+local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net")
+local Remote = Net:WaitForChild("RE/UseItem")
+local PlayerMouse = require(ReplicatedStorage.Packages.PlayerMouse)
+
+local function getRoot()
+    local char = player.Character
+    if char then return char:FindFirstChild("HumanoidRootPart") end
+end
+
+local function equipLaser()
+    local backpack = player:WaitForChild("Backpack")
+    local character = player.Character
+    local humanoid = character:FindFirstChild("Humanoid")
+    local laserTool = backpack:FindFirstChild("Laser Cape") or character:FindFirstChild("Laser Cape")
+    if laserTool and humanoid then
+        if laserTool.Parent ~= character then
+            humanoid:EquipTool(laserTool)
+            RunService.RenderStepped:Wait()
+        end
+        return laserTool
+    end
+    return nil
+end
+
+local function unequipLaser()
+    local character = player.Character
+    local backpack = player:WaitForChild("Backpack")
+    local laserTool = character:FindFirstChild("Laser Cape")
+    if laserTool then laserTool.Parent = backpack end
+end
+
+autoLaserBtn.MouseButton1Click:Connect(function()
+    AutoLaser = not AutoLaser
+    autoLaserBtn.Text = "Auto Laser " .. (AutoLaser and "ON" or "OFF")
+    autoLaserBtn.BackgroundColor3 = AutoLaser and Color3.fromRGB(50,200,100) or Color3.fromRGB(50,50,50)
+    if not AutoLaser then unequipLaser() end
+end)
+
+-- Main Auto Laser loop
+spawn(function()
+    while true do
+        if AutoLaser then
+            local root = getRoot()
+            if root then
+                local myPos = root.Position
+                local laserTool = equipLaser()
+                if laserTool then
+                    for _, targetPlayer in pairs(Players:GetPlayers()) do
+                        if targetPlayer ~= player and targetPlayer.Character and targetPlayer.Character:FindFirstChild("UpperTorso") then
+                            local targetPart = targetPlayer.Character.UpperTorso
+                            if (myPos - targetPart.Position).Magnitude <= LaserDistance then
+                                laserTool:Activate()
+                                local args = {targetPart.Position, targetPart}
+                                Remote:FireServer(unpack(args))
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        task.wait(0.01)
+    end
+end)
