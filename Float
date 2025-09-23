@@ -14,15 +14,14 @@ local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 160, 0, 60)
 mainFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-mainFrame.BackgroundTransparency = 0
 mainFrame.Active = true
 mainFrame.Parent = screenGui
 
--- มนๆ
+-- มน ๆ
 local UICorner = Instance.new("UICorner", mainFrame)
 UICorner.CornerRadius = UDim.new(0, 15)
 
--- กรอบสายรุ้งวิ่งๆ
+-- กรอบสายรุ้งวิ่ง ๆ
 local stroke = Instance.new("UIStroke")
 stroke.Thickness = 3
 stroke.Parent = mainFrame
@@ -125,11 +124,18 @@ local function disableFloat()
     if FloatPart then FloatPart:Destroy() FloatPart=nil end
 end
 
-
+-- ปุ่ม Float
 floatBtn.MouseButton1Click:Connect(function()
     if Floating then
         disableFloat()
     else
         enableFloat()
+    end
+end)
+
+-- ปิด Float อัตโนมัติถ้า UI ถูกลบ
+mainFrame.AncestryChanged:Connect(function(_, parent)
+    if not parent then
+        disableFloat()
     end
 end)
