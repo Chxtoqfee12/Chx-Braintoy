@@ -16,7 +16,6 @@ mainFrame.Position = UDim2.new(0.4, 0, 0.4, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
-mainFrame.Draggable = false
 mainFrame.ClipsDescendants = true
 
 -- มุมโค้งมน
@@ -44,7 +43,6 @@ btnCorner.CornerRadius = UDim.new(0, 8)
 
 -- ===== Drag Support (PC + Mobile) =====
 local dragging, dragInput, dragStart, startPos
-
 local function update(input)
     local delta = input.Position - dragStart
     mainFrame.Position = UDim2.new(
@@ -54,12 +52,10 @@ local function update(input)
 end
 
 mainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or
-       input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
         startPos = mainFrame.Position
-
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -69,8 +65,7 @@ mainFrame.InputBegan:Connect(function(input)
 end)
 
 mainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or
-       input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
         dragInput = input
     end
 end)
@@ -127,11 +122,22 @@ local function unequipLaser()
     if laserTool then laserTool.Parent = backpack end
 end
 
+-- ปุ่ม Auto Laser
 autoLaserBtn.MouseButton1Click:Connect(function()
     AutoLaser = not AutoLaser
     autoLaserBtn.Text = "Auto Laser " .. (AutoLaser and "ON" or "OFF")
     autoLaserBtn.BackgroundColor3 = AutoLaser and Color3.fromRGB(50,200,100) or Color3.fromRGB(50,50,50)
     if not AutoLaser then unequipLaser() end
+end)
+
+-- ปิด Auto Laser อัตโนมัติถ้า UI ถูกลบ
+screenGui.AncestryChanged:Connect(function(_, parent)
+    if not parent and AutoLaser then
+        AutoLaser = false
+        autoLaserBtn.Text = "Auto Laser OFF"
+        autoLaserBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+        unequipLaser()
+    end
 end)
 
 -- Main Auto Laser loop
