@@ -4,14 +4,14 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- ===== ScreenGui =====
+-- ===== Main UI =====
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CHX_GUI"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- ===== Main Frame =====
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0,220,0,215)
 mainFrame.Position = UDim2.new(0.05,0,0.25,0)
@@ -20,12 +20,12 @@ mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
 Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0,20)
 
--- ===== Rainbow Border =====
 local border = Instance.new("UIStroke")
 border.Parent = mainFrame
 border.Thickness = 3
 border.Color = Color3.fromHSV(0,1,1)
 border.LineJoinMode = Enum.LineJoinMode.Round
+
 local hue = 0
 RunService.RenderStepped:Connect(function()
     hue = (hue + 0.002) % 1
@@ -41,7 +41,6 @@ topBar.Parent = mainFrame
 topBar.Active = true
 topBar.Selectable = true
 
--- Title
 local titleText = Instance.new("TextLabel")
 titleText.Size = UDim2.new(1,-60,1,0)
 titleText.Position = UDim2.new(0,5,0,0)
@@ -108,7 +107,7 @@ local autoLaserBtn = createButton("Auto Laser OFF",45,Color3.fromRGB(70,70,70))
 local functionBtn = createButton("Run Function",90,Color3.fromRGB(80,80,80))
 local hopBtn = createButton("Hop Server",135,Color3.fromRGB(50,50,50))
 
--- ===== Toggle UI Visibility (Mini Mode) =====
+-- ===== Toggle UI Visibility =====
 local uiExpanded = true
 toggleBtn.MouseButton1Click:Connect(function()
     uiExpanded = not uiExpanded
@@ -137,10 +136,8 @@ local function update(input)
         startPos.Y.Offset + delta.Y
     )
 end
-
 topBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or
-       input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
         startPos = mainFrame.Position
@@ -151,14 +148,11 @@ topBar.InputBegan:Connect(function(input)
         end)
     end
 end)
-
 topBar.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or
-       input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
+    if input == dragInput and dragging then
+        update(input)
     end
 end)
-
 UserInputService.InputChanged:Connect(function(input)
     if input == dragInput and dragging then
         update(input)
@@ -169,55 +163,43 @@ end)
 local Floating = false
 local AutoLaser = false
 
--- ===== Float Logic =====
-local function disableFloat()
-    if Floating then
-        Floating = false
-        floatBtn.Text = "Float Off"
-        local floatUI = playerGui:FindFirstChild("FloatUI")
-        if floatUI then floatUI:Destroy() end
-    end
-end
-
+-- ===== Float Button Logic =====
 floatBtn.MouseButton1Click:Connect(function()
-    if not Floating then
-        Floating = true
+    Floating = not Floating
+    if Floating then
         floatBtn.Text = "Float ON"
         local url = "https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/Float"
         pcall(function() loadstring(game:HttpGet(url))() end)
     else
-        disableFloat()
+        floatBtn.Text = "Float Off"
+        local floatUI = playerGui:FindFirstChild("FloatUI")
+        if floatUI then floatUI:Destroy() end
+        if typeof(disableFloat) == "function" then pcall(disableFloat) end
     end
 end)
 
--- ===== Auto Laser Logic =====
-local function disableAutoLaser()
-    if AutoLaser then
-        AutoLaser = false
-        autoLaserBtn.Text = "Auto Laser OFF"
-        local laserUI = playerGui:FindFirstChild("AutoLaserUI")
-        if laserUI then laserUI:Destroy() end
-    end
-end
-
+-- ===== Auto Laser Button Logic =====
 autoLaserBtn.MouseButton1Click:Connect(function()
-    if not AutoLaser then
-        AutoLaser = true
+    AutoLaser = not AutoLaser
+    if AutoLaser then
         autoLaserBtn.Text = "Auto Laser ON"
         local url = "https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/Laser"
         pcall(function() loadstring(game:HttpGet(url))() end)
     else
-        disableAutoLaser()
+        autoLaserBtn.Text = "Auto Laser OFF"
+        local laserUI = playerGui:FindFirstChild("AutoLaserUI")
+        if laserUI then laserUI:Destroy() end
+        if typeof(unequipLaser) == "function" then pcall(unequipLaser) end
     end
 end)
 
--- ===== Function Button Logic =====
+-- ===== Function Button =====
 functionBtn.MouseButton1Click:Connect(function()
     local url = "https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"
     pcall(function() loadstring(game:HttpGet(url))() end)
 end)
 
--- ===== Hop Server Button Logic =====
+-- ===== Hop Server Button =====
 hopBtn.MouseButton1Click:Connect(function()
     getgenv().ALLOWED_PLACE_ID = 109983668079237
     getgenv().RETRY_DELAY = 2
@@ -235,14 +217,29 @@ hopBtn.MouseButton1Click:Connect(function()
                 end)
                 if not success then warn("Hop Server failed:", err) end
             end)
-            task.wait(3)
+            wait(3)
         end
     end)
 end)
 
--- ===== Close Button Logic =====
+-- ===== Close Main UI Logic =====
 closeBtn.MouseButton1Click:Connect(function()
-    disableFloat()
-    disableAutoLaser()
-    -- UI หลัก CHX_GUI ไม่ถูกลบ
+    -- ปิด Float + ลบ UI
+    Floating = false
+    floatBtn.Text = "Float Off"
+    local floatUI = playerGui:FindFirstChild("FloatUI")
+    if floatUI then floatUI:Destroy() end
+    if typeof(disableFloat) == "function" then pcall(disableFloat) end
+
+    -- ปิด AutoLaser + ลบ UI
+    AutoLaser = false
+    autoLaserBtn.Text = "Auto Laser OFF"
+    local laserUI = playerGui:FindFirstChild("AutoLaserUI")
+    if laserUI then laserUI:Destroy() end
+    if typeof(unequipLaser) == "function" then pcall(unequipLaser) end
+
+    -- ลบ UI หลัก
+    if screenGui and screenGui.Parent then
+        screenGui:Destroy()
+    end
 end)
