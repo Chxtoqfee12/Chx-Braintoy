@@ -11,7 +11,7 @@ screenGui.Name = "FloatUI"
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 200, 0, 80)
+mainFrame.Size = UDim2.new(0, 160, 0, 60)
 mainFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BackgroundTransparency = 0
