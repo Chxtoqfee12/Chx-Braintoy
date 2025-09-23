@@ -226,7 +226,7 @@ hopBtn.MouseButton1Click:Connect(function()
                 end)
                 if not success then warn("Hop Server failed:", err) end
             end)
-            wait(3)
+            wait(5)
         end
     end)
 end)
