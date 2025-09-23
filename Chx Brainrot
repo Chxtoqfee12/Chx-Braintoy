@@ -4,7 +4,6 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- ===== ScreenGui =====
 local screenGui = Instance.new("ScreenGui")
@@ -39,8 +38,8 @@ topBar.Size = UDim2.new(1,0,0,35)
 topBar.Position = UDim2.new(0,0,0,0)
 topBar.BackgroundTransparency = 1
 topBar.Parent = mainFrame
-topBar.Active = true       -- สำคัญ! ทำให้มือถือลากได้
-topBar.Selectable = true   -- สำคัญ! ทำให้มือถือลากได้
+topBar.Active = true
+topBar.Selectable = true
 
 -- Title
 local titleText = Instance.new("TextLabel")
@@ -67,7 +66,7 @@ closeBtn.TextSize = 14
 closeBtn.Parent = topBar
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,12)
 
--- Toggle Button (พับ/ขยาย UI)
+-- Toggle Button (Mini Mode)
 local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(0,25,0,25)
 toggleBtn.Position = UDim2.new(1,-35,0,5)
@@ -126,10 +125,9 @@ toggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ===== Drag Main Frame (รองรับมือถือและ PC) =====
+-- ===== Drag Main Frame =====
 local dragging = false
 local dragInput, dragStart, startPos
-
 local function update(input)
     local delta = input.Position - dragStart
     mainFrame.Position = UDim2.new(
@@ -146,7 +144,6 @@ topBar.InputBegan:Connect(function(input)
         dragging = true
         dragStart = input.Position
         startPos = mainFrame.Position
-
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -168,138 +165,59 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- ===== Close Button =====
-closeBtn.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
-end)
-
-
-
-
-
+-- ===== State Variables =====
+local Floating = false
+local AutoLaser = false
 
 -- ===== Float Logic =====
-local Floating = false
-local FloatPart, FloatHeight = nil, -2
-local FloatConn, char, root
-
-local function updateCharacter()
-    char = player.Character
-    if char then
-        root = char:WaitForChild("HumanoidRootPart")
-    end
-end
-updateCharacter()
-player.CharacterAdded:Connect(updateCharacter)
-
-local function enableFloat()
-    if Floating then return end
-    if not root then updateCharacter() end
-    Floating = true
-    floatBtn.Text = "Float On"
-    FloatPart = Instance.new("Part")
-    FloatPart.Size = Vector3.new(3,0.2,3)
-    FloatPart.Anchored = true
-    FloatPart.Transparency = 1
-    FloatPart.Parent = workspace
-    Instance.new("CylinderHandleAdornment", FloatPart)
-    FloatConn = RunService.Heartbeat:Connect(function()
-        if FloatPart and root then
-            FloatPart.CFrame = CFrame.new(root.Position.X, root.Position.Y+FloatHeight, root.Position.Z)
-        end
-    end)
-end
-
 local function disableFloat()
-    if not Floating then return end
-    Floating = false
-    floatBtn.Text = "Float Off"
-    if FloatConn then FloatConn:Disconnect() FloatConn=nil end
-    if FloatPart then FloatPart:Destroy() FloatPart=nil end
+    if Floating then
+        Floating = false
+        floatBtn.Text = "Float Off"
+        local floatUI = playerGui:FindFirstChild("FloatUI")
+        if floatUI then floatUI:Destroy() end
+    end
 end
 
 floatBtn.MouseButton1Click:Connect(function()
-    if Floating then disableFloat() else enableFloat() end
+    if not Floating then
+        Floating = true
+        floatBtn.Text = "Float ON"
+        local url = "https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/Float"
+        pcall(function() loadstring(game:HttpGet(url))() end)
+    else
+        disableFloat()
+    end
 end)
 
 -- ===== Auto Laser Logic =====
-local AutoLaser = false
-local LaserDistance = 60
-local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net")
-local Remote = Net:WaitForChild("RE/UseItem")
-local PlayerMouse = require(ReplicatedStorage.Packages.PlayerMouse)
-
-local function getRoot()
-    local char = player.Character
-    if char then return char:FindFirstChild("HumanoidRootPart") end
-end
-
-local function equipLaser()
-    local backpack = player:WaitForChild("Backpack")
-    local character = player.Character
-    local humanoid = character:FindFirstChild("Humanoid")
-    local laserTool = backpack:FindFirstChild("Laser Cape") or character:FindFirstChild("Laser Cape")
-    if laserTool and humanoid then
-        if laserTool.Parent ~= character then
-            humanoid:EquipTool(laserTool)
-            RunService.RenderStepped:Wait()
-        end
-        return laserTool
+local function disableAutoLaser()
+    if AutoLaser then
+        AutoLaser = false
+        autoLaserBtn.Text = "Auto Laser OFF"
+        local laserUI = playerGui:FindFirstChild("AutoLaserUI")
+        if laserUI then laserUI:Destroy() end
     end
-    return nil
-end
-
-local function unequipLaser()
-    local character = player.Character
-    local backpack = player:WaitForChild("Backpack")
-    local laserTool = character:FindFirstChild("Laser Cape")
-    if laserTool then laserTool.Parent=backpack end
 end
 
 autoLaserBtn.MouseButton1Click:Connect(function()
-    AutoLaser = not AutoLaser
-    autoLaserBtn.Text = "Auto Laser "..(AutoLaser and "ON" or "OFF")
-    if not AutoLaser then unequipLaser() end
-end)
-
--- Main Auto Laser loop
-spawn(function()
-    while true do
-        if AutoLaser then
-            local root = getRoot()
-            if root then
-                local myPos=root.Position
-                local laserTool=equipLaser()
-                if laserTool then
-                    for _, targetPlayer in pairs(Players:GetPlayers()) do
-                        if targetPlayer~=player and targetPlayer.Character and targetPlayer.Character:FindFirstChild("UpperTorso") then
-                            local targetPart=targetPlayer.Character.UpperTorso
-                            if (myPos-targetPart.Position).Magnitude<=LaserDistance then
-                                laserTool:Activate()
-                                local args={targetPart.Position,targetPart}
-                                Remote:FireServer(unpack(args))
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        wait(0.01)
+    if not AutoLaser then
+        AutoLaser = true
+        autoLaserBtn.Text = "Auto Laser ON"
+        local url = "https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/Laser"
+        pcall(function() loadstring(game:HttpGet(url))() end)
+    else
+        disableAutoLaser()
     end
 end)
 
--- ===== Function Button =====
+-- ===== Function Button Logic =====
 functionBtn.MouseButton1Click:Connect(function()
     local url = "https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"
-    local success, funcOrErr = pcall(function()
-        return loadstring(game:HttpGet(url))()
-    end)
-    if not success then
-        warn("Failed to load function:", funcOrErr)
-    end
+    pcall(function() loadstring(game:HttpGet(url))() end)
 end)
 
--- ===== Hop Server =====
+-- ===== Hop Server Button Logic =====
 hopBtn.MouseButton1Click:Connect(function()
     getgenv().ALLOWED_PLACE_ID = 109983668079237
     getgenv().RETRY_DELAY = 2
@@ -311,27 +229,20 @@ hopBtn.MouseButton1Click:Connect(function()
 
     spawn(function()
         while true do
-            -- เรียก Hop Server แบบแยก thread
             task.spawn(function()
                 local success, err = pcall(function()
                     loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
                 end)
-                if not success then
-                    warn("Hop Server failed:", err)
-                end
+                if not success then warn("Hop Server failed:", err) end
             end)
-            
-            wait(3) -- รอ 1 วินาที ก่อนรอบถัดไป
+            task.wait(3)
         end
     end)
 end)
 
-
--- ===== Close Button =====
+-- ===== Close Button Logic =====
 closeBtn.MouseButton1Click:Connect(function()
-    AutoLaser=false
-    autoLaserBtn.Text="Auto Laser OFF"
-    unequipLaser()
     disableFloat()
-    screenGui:Destroy()
+    disableAutoLaser()
+    -- UI หลัก CHX_GUI ไม่ถูกลบ
 end)
