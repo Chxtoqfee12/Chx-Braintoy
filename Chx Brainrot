@@ -124,27 +124,26 @@ toggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ===== Drag Main Frame =====
+-- ===== Drag MainFrame (รองรับ Mouse + Touch) =====
 local dragging = false
-local dragInput, dragStart, startPos
+local dragStartPos, frameStartPos
 
-local function update(input)
-    local delta = input.Position - dragStart
+local function updateDrag(inputPos)
+    local delta = inputPos - dragStartPos
     mainFrame.Position = UDim2.new(
-        startPos.X.Scale,
-        startPos.X.Offset + delta.X,
-        startPos.Y.Scale,
-        startPos.Y.Offset + delta.Y
+        frameStartPos.X.Scale,
+        frameStartPos.X.Offset + delta.X,
+        frameStartPos.Y.Scale,
+        frameStartPos.Y.Offset + delta.Y
     )
 end
 
 -- เริ่มลาก
-local function dragStartFunc(input)
+local function startDrag(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-        dragInput = input
+        dragStartPos = input.Position
+        frameStartPos = mainFrame.Position
 
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
@@ -154,26 +153,19 @@ local function dragStartFunc(input)
     end
 end
 
--- เชื่อม Drag ให้ TopBar และ TextLabel
-topBar.InputBegan:Connect(dragStartFunc)
-titleText.InputBegan:Connect(dragStartFunc)
+-- กดบน TopBar หรือ Title Text เริ่มลาก
+topBar.InputBegan:Connect(startDrag)
+titleText.InputBegan:Connect(startDrag)
 
--- อัปเดตตำแหน่งขณะลาก
-topBar.InputChanged:Connect(function(input)
-    if input == dragInput then
-        update(input)
-    end
-end)
-titleText.InputChanged:Connect(function(input)
-    if input == dragInput then
-        update(input)
-    end
-end)
+-- อัปเดตตำแหน่งตลอดเวลา
 UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput then
-        update(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        updateDrag(input.Position)
     end
 end)
+
+
+
 
 
 -- ===== State Variables =====
