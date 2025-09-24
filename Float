@@ -106,13 +106,13 @@ local function enableFloat()
     FloatPart.Transparency = 0.5
     FloatPart.Material = Enum.Material.Neon
     FloatPart.Color = Color3.fromRGB(100, 100, 255)
-    FloatPart.CFrame = root.CFrame * CFrame.new(0, -humanoid.HipHeight - 1.4, 0)
+    FloatPart.CFrame = root.CFrame * CFrame.new(0, -humanoid.HipHeight - 0.7, 0)
     FloatPart.Parent = workspace
 
     -- อัปเดตตำแหน่ง floatPart ให้ตามตัวเรา
     FloatConn = RunService.Heartbeat:Connect(function()
         if Floating and FloatPart and root then
-            FloatPart.CFrame = CFrame.new(root.Position.X, root.Position.Y - humanoid.HipHeight - 1.4, root.Position.Z)
+            FloatPart.CFrame = CFrame.new(root.Position.X, root.Position.Y - humanoid.HipHeight - 0.7, root.Position.Z)
         end
     end)
 end
