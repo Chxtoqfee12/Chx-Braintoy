@@ -1,14 +1,79 @@
 -- ===== Services =====
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local PhysicsService = game:GetService("PhysicsService")
 local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local root = char:WaitForChild("HumanoidRootPart")
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ===== CollisionGroup =====
+task.defer(function()
+	if not pcall(function() PhysicsService:CreateCollisionGroup("Float") end) then end
+	PhysicsService:CollisionGroupSetCollidable("Float", "Default", false) -- ไม่ชนบ้าน/สิ่งก่อสร้าง
+	PhysicsService:CollisionGroupSetCollidable("Float", "Player", true)   -- ชน Player
+end)
+
+-- ===== Settings =====
+local FLOAT_HEIGHT = 100
+local RISE_TIME = 5
+local OFFSET_BELOW = 3
+
+-- ===== Function =====
+local function spawnLift()
+	local floatPart = Instance.new("Part")
+	floatPart.Size = Vector3.new(10, 2, 10)
+	floatPart.Anchored = false
+	floatPart.CanCollide = true
+	floatPart.Position = root.Position - Vector3.new(0, OFFSET_BELOW, 0)
+	floatPart.Rotation = Vector3.new(0,0,0)
+	floatPart.Parent = workspace
+
+	PhysicsService:SetPartCollisionGroup(floatPart, "Float")
+
+	local bp = Instance.new("BodyPosition")
+	bp.MaxForce = Vector3.new(1e6,1e6,1e6)
+	bp.P = 5000
+	bp.D = 100
+	bp.Position = floatPart.Position
+	bp.Parent = floatPart
+
+	local bg = Instance.new("BodyGyro")
+	bg.MaxTorque = Vector3.new(1e6,1e6,1e6)
+	bg.P = 5000
+	bg.CFrame = CFrame.new(floatPart.Position)
+	bg.Parent = floatPart
+
+	local startTime = tick()
+	local startPos = floatPart.Position
+	local endPos = startPos + Vector3.new(0, FLOAT_HEIGHT, 0)
+
+	local conn
+	conn = RunService.Heartbeat:Connect(function(dt)
+		local alpha = math.clamp((tick() - startTime)/RISE_TIME, 0, 1)
+		bp.Position = startPos:Lerp(endPos, alpha)
+		bg.CFrame = CFrame.new(bp.Position)
+
+		if alpha >= 1 then
+			conn:Disconnect()
+			bp:Destroy()
+			bg:Destroy()
+		end
+	end)
+
+	task.delay(5, function()
+		if floatPart then
+			floatPart:Destroy()
+		end
+	end)
+end
 
 -- ===== UI =====
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "FloatUI"
-screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.Parent = playerGui
 
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 160, 0, 60)
@@ -17,10 +82,7 @@ mainFrame.Position = UDim2.new(1, -100, 0, -10)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.Active = true
 mainFrame.Parent = screenGui
-
--- มน ๆ
-local UICorner = Instance.new("UICorner", mainFrame)
-UICorner.CornerRadius = UDim.new(0, 15)
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 15)
 
 -- กรอบสายรุ้งวิ่ง ๆ
 local stroke = Instance.new("UIStroke")
@@ -28,12 +90,12 @@ stroke.Thickness = 3
 stroke.Parent = mainFrame
 
 task.spawn(function()
-    while true do
-        for i = 0, 1, 0.01 do
-            stroke.Color = Color3.fromHSV(i, 1, 1)
-            task.wait(0.05)
-        end
-    end
+	while true do
+		for i = 0, 1, 0.01 do
+			stroke.Color = Color3.fromHSV(i, 1, 1)
+			task.wait(0.05)
+		end
+	end
 end)
 
 -- ปุ่ม Float
@@ -41,7 +103,7 @@ local floatBtn = Instance.new("TextButton")
 floatBtn.Size = UDim2.new(1, -20, 1, -20)
 floatBtn.Position = UDim2.new(0, 10, 0, 10)
 floatBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-floatBtn.Text = "Float Off"
+floatBtn.Text = "Float (F)"
 floatBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 floatBtn.Font = Enum.Font.GothamBold
 floatBtn.TextSize = 18
@@ -50,98 +112,39 @@ Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(0, 10)
 
 -- ===== Drag Anywhere (PC + Mobile) =====
 local dragging, dragStart, startPos
-
 local function update(input)
-    local delta = input.Position - dragStart
-    mainFrame.Position = UDim2.new(
-        startPos.X.Scale, startPos.X.Offset + delta.X,
-        startPos.Y.Scale, startPos.Y.Offset + delta.Y
-    )
+	local delta = input.Position - dragStart
+	mainFrame.Position = UDim2.new(
+		startPos.X.Scale, startPos.X.Offset + delta.X,
+		startPos.Y.Scale, startPos.Y.Offset + delta.Y
+	)
 end
 
 mainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = mainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        update(input)
-    end
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		update(input)
+	end
 end)
 
--- ===== Float Logic =====
-local Floating = false
-local FloatPart, FloatHeight = nil, -2
-local FloatConn, char, root, humanoid
+-- ===== Connect Button & Hotkey =====
+floatBtn.MouseButton1Click:Connect(spawnLift)
 
-local function updateCharacter()
-    char = player.Character
-    if char then
-        root = char:WaitForChild("HumanoidRootPart")
-        humanoid = char:WaitForChild("Humanoid")
-    end
-end
-updateCharacter()
-player.CharacterAdded:Connect(updateCharacter)
-
-local function enableFloat()
-    if Floating then return end
-    Floating = true
-    floatBtn.Text = "Float On"
-
-    -- สร้าง clone ของตัวเราเป็นแท่น
-    FloatPart = Instance.new("Part")
-    FloatPart.Size = Vector3.new(4, 1, 4)
-    FloatPart.Anchored = true
-    FloatPart.CanCollide = true
-    FloatPart.Transparency = 0.5
-    FloatPart.Material = Enum.Material.Neon
-    FloatPart.Color = Color3.fromRGB(100, 100, 255)
-    FloatPart.CFrame = root.CFrame * CFrame.new(0, -humanoid.HipHeight - 0.7, 0)
-    FloatPart.Parent = workspace
-
-    -- อัปเดตตำแหน่ง floatPart ให้ตามตัวเรา
-    FloatConn = RunService.Heartbeat:Connect(function()
-        if Floating and FloatPart and root then
-            FloatPart.CFrame = CFrame.new(root.Position.X, root.Position.Y - humanoid.HipHeight - 0.7, root.Position.Z)
-        end
-    end)
-end
-
-local function disableFloat()
-    Floating = false
-    floatBtn.Text = "Float Off"
-    if FloatConn then
-        FloatConn:Disconnect()
-        FloatConn = nil
-    end
-    if FloatPart then
-        FloatPart:Destroy()
-        FloatPart = nil
-    end
-end
-
--- ปุ่ม Float
-floatBtn.MouseButton1Click:Connect(function()
-    if Floating then
-        disableFloat()
-    else
-        enableFloat()
-    end
-end)
-
--- ปิด Float อัตโนมัติถ้า UI ถูกลบหรือปิดจาก UI หลัก
-screenGui.AncestryChanged:Connect(function(_, parent)
-    if not parent and Floating then
-        disableFloat()
-    end
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.F then
+		spawnLift()
+	end
 end)
