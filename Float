@@ -27,7 +27,7 @@ local function spawnLift()
 	if not root then return end
 
 	local floatPart = Instance.new("Part")
-	floatPart.Size = Vector3.new(15, 2, 15)
+	floatPart.Size = Vector3.new(10, 1, 10)
 	floatPart.Anchored = false
 	floatPart.CanCollide = true
 	floatPart.Position = root.Position - Vector3.new(0, OFFSET_BELOW, 0)
