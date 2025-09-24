@@ -12,7 +12,7 @@ screenGui.ResetOnSpawn = false
 
 local mainFrame = Instance.new("Frame", screenGui)
 mainFrame.Size = UDim2.new(0, 200, 0, 260)
-mainFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
+mainFrame.Position = UDim2.new(1, -280, 0, 60)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
