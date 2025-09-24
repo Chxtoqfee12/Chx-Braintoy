@@ -18,7 +18,6 @@ mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.Active = true
 mainFrame.Parent = screenGui
 
-
 -- มน ๆ
 local UICorner = Instance.new("UICorner", mainFrame)
 UICorner.CornerRadius = UDim.new(0, 15)
@@ -29,7 +28,7 @@ stroke.Thickness = 3
 stroke.Parent = mainFrame
 
 task.spawn(function()
-    while task.wait() do
+    while true do
         for i = 0, 1, 0.01 do
             stroke.Color = Color3.fromHSV(i, 1, 1)
             task.wait(0.05)
@@ -42,7 +41,7 @@ local floatBtn = Instance.new("TextButton")
 floatBtn.Size = UDim2.new(1, -20, 1, -20)
 floatBtn.Position = UDim2.new(0, 10, 0, 10)
 floatBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-floatBtn.Text = "FloatFly Off"
+floatBtn.Text = "Float Off"
 floatBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 floatBtn.Font = Enum.Font.GothamBold
 floatBtn.TextSize = 18
@@ -82,57 +81,54 @@ end)
 -- ===== Float Logic =====
 local Floating = false
 local FloatPart, FloatHeight = nil, -2
-local FloatConn, char, root
+local FloatConn, char, root, humanoid
 
 local function updateCharacter()
     char = player.Character
     if char then
         root = char:WaitForChild("HumanoidRootPart")
+        humanoid = char:WaitForChild("Humanoid")
     end
 end
 updateCharacter()
 player.CharacterAdded:Connect(updateCharacter)
 
 local function enableFloat()
-    if floating then return end
-    floating = true
+    if Floating then return end
+    Floating = true
     floatBtn.Text = "Float On"
 
     -- สร้าง clone ของตัวเราเป็นแท่น
-    floatPart = Instance.new("Part")
-    floatPart.Size = Vector3.new(4, 1, 4)
-    floatPart.Anchored = true
-    floatPart.CanCollide = true
-    floatPart.Transparency = 0.5
-    floatPart.Material = Enum.Material.Neon
-    floatPart.Color = Color3.fromRGB(100, 100, 255)
-    floatPart.CFrame = root.CFrame * CFrame.new(0, -humanoid.HipHeight - 0.5, 0)
-    floatPart.Parent = workspace
+    FloatPart = Instance.new("Part")
+    FloatPart.Size = Vector3.new(4, 1, 4)
+    FloatPart.Anchored = true
+    FloatPart.CanCollide = true
+    FloatPart.Transparency = 0.5
+    FloatPart.Material = Enum.Material.Neon
+    FloatPart.Color = Color3.fromRGB(100, 100, 255)
+    FloatPart.CFrame = root.CFrame * CFrame.new(0, -humanoid.HipHeight - 0.5, 0)
+    FloatPart.Parent = workspace
 
     -- อัปเดตตำแหน่ง floatPart ให้ตามตัวเรา
-    RunService.Heartbeat:Connect(function()
-        if floating and floatPart and root then
-            floatPart.CFrame = CFrame.new(root.Position.X, root.Position.Y - humanoid.HipHeight - 0.5, root.Position.Z)
+    FloatConn = RunService.Heartbeat:Connect(function()
+        if Floating and FloatPart and root then
+            FloatPart.CFrame = CFrame.new(root.Position.X, root.Position.Y - humanoid.HipHeight - 0.5, root.Position.Z)
         end
     end)
 end
 
 local function disableFloat()
-    floating = false
+    Floating = false
     floatBtn.Text = "Float Off"
-    if floatPart then
-        floatPart:Destroy()
-        floatPart = nil
+    if FloatConn then
+        FloatConn:Disconnect()
+        FloatConn = nil
+    end
+    if FloatPart then
+        FloatPart:Destroy()
+        FloatPart = nil
     end
 end
-
-floatBtn.MouseButton1Click:Connect(function()
-    if floating then
-        disableFloat()
-    else
-        enableFloat()
-    end
-end)
 
 -- ปุ่ม Float
 floatBtn.MouseButton1Click:Connect(function()
