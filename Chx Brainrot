@@ -102,7 +102,7 @@ local function createButton(text, y, color)
     return btn
 end
 
-local floatBtn = createButton("Float Off",0,Color3.fromRGB(50,50,50))
+local floatBtn = createButton("Float OFF",0,Color3.fromRGB(50,50,50))
 local autoLaserBtn = createButton("Auto Laser OFF",45,Color3.fromRGB(70,70,70))
 local functionBtn = createButton("Run Function",90,Color3.fromRGB(80,80,80))
 local hopBtn = createButton("Hop Server",135,Color3.fromRGB(50,50,50))
