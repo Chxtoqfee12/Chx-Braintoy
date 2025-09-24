@@ -42,7 +42,7 @@ local floatBtn = Instance.new("TextButton")
 floatBtn.Size = UDim2.new(1, -20, 1, -20)
 floatBtn.Position = UDim2.new(0, 10, 0, 10)
 floatBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-floatBtn.Text = "Float Off"
+floatBtn.Text = "FloatFly Off"
 floatBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 floatBtn.Font = Enum.Font.GothamBold
 floatBtn.TextSize = 18
@@ -94,33 +94,45 @@ updateCharacter()
 player.CharacterAdded:Connect(updateCharacter)
 
 local function enableFloat()
-    if Floating then return end
-    if not root then updateCharacter() end
-    Floating = true
+    if floating then return end
+    floating = true
     floatBtn.Text = "Float On"
-    floatBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 100) -- สีเขียวตอนเปิด
 
-    FloatPart = Instance.new("Part")
-    FloatPart.Size = Vector3.new(3,0.2,3)
-    FloatPart.Anchored = true
-    FloatPart.Transparency = 2
-    FloatPart.Parent = workspace
+    -- สร้าง clone ของตัวเราเป็นแท่น
+    floatPart = Instance.new("Part")
+    floatPart.Size = Vector3.new(4, 1, 4)
+    floatPart.Anchored = true
+    floatPart.CanCollide = true
+    floatPart.Transparency = 0.5
+    floatPart.Material = Enum.Material.Neon
+    floatPart.Color = Color3.fromRGB(100, 100, 255)
+    floatPart.CFrame = root.CFrame * CFrame.new(0, -humanoid.HipHeight - 0.5, 0)
+    floatPart.Parent = workspace
 
-    FloatConn = RunService.Heartbeat:Connect(function()
-        if FloatPart and root then
-            FloatPart.CFrame = CFrame.new(root.Position.X, root.Position.Y + FloatHeight, root.Position.Z)
+    -- อัปเดตตำแหน่ง floatPart ให้ตามตัวเรา
+    RunService.Heartbeat:Connect(function()
+        if floating and floatPart and root then
+            floatPart.CFrame = CFrame.new(root.Position.X, root.Position.Y - humanoid.HipHeight - 0.5, root.Position.Z)
         end
     end)
 end
 
 local function disableFloat()
-    if not Floating then return end
-    Floating = false
+    floating = false
     floatBtn.Text = "Float Off"
-    floatBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- สีเดิมตอนปิด
-    if FloatConn then FloatConn:Disconnect() FloatConn=nil end
-    if FloatPart then FloatPart:Destroy() FloatPart=nil end
+    if floatPart then
+        floatPart:Destroy()
+        floatPart = nil
+    end
 end
+
+floatBtn.MouseButton1Click:Connect(function()
+    if floating then
+        disableFloat()
+    else
+        enableFloat()
+    end
+end)
 
 -- ปุ่ม Float
 floatBtn.MouseButton1Click:Connect(function()
