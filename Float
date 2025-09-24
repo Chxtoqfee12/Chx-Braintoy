@@ -5,15 +5,13 @@ local PhysicsService = game:GetService("PhysicsService")
 local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local root = char:WaitForChild("HumanoidRootPart")
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- ===== CollisionGroup =====
 task.defer(function()
 	if not pcall(function() PhysicsService:CreateCollisionGroup("Float") end) then end
-	PhysicsService:CollisionGroupSetCollidable("Float", "Default", false) -- ไม่ชนบ้าน/สิ่งก่อสร้าง
-	PhysicsService:CollisionGroupSetCollidable("Float", "Player", true)   -- ชน Player
+	PhysicsService:CollisionGroupSetCollidable("Float", "Default", false)
+	PhysicsService:CollisionGroupSetCollidable("Float", "Player", true)
 end)
 
 -- ===== Settings =====
@@ -21,10 +19,15 @@ local FLOAT_HEIGHT = 100
 local RISE_TIME = 5
 local OFFSET_BELOW = 3
 
--- ===== Function =====
+-- ===== Function Float =====
 local function spawnLift()
+	local char = player.Character
+	if not char then return end
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not root then return end
+
 	local floatPart = Instance.new("Part")
-	floatPart.Size = Vector3.new(10, 2, 10)
+	floatPart.Size = Vector3.new(15, 2, 15)
 	floatPart.Anchored = false
 	floatPart.CanCollide = true
 	floatPart.Position = root.Position - Vector3.new(0, OFFSET_BELOW, 0)
@@ -70,81 +73,80 @@ local function spawnLift()
 	end)
 end
 
--- ===== UI =====
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FloatUI"
-screenGui.Parent = playerGui
+-- ===== Create UI ONCE =====
+if not playerGui:FindFirstChild("FloatUI") then
+	local screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "FloatUI"
+	screenGui.Parent = playerGui
 
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 160, 0, 60)
-mainFrame.AnchorPoint = Vector2.new(1,0)
-mainFrame.Position = UDim2.new(1, -100, 0, -10)
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-mainFrame.Active = true
-mainFrame.Parent = screenGui
-Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 15)
+	local mainFrame = Instance.new("Frame")
+	mainFrame.Size = UDim2.new(0, 160, 0, 60)
+	mainFrame.AnchorPoint = Vector2.new(1,0)
+	mainFrame.Position = UDim2.new(1, -100, 0, -10)
+	mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	mainFrame.Active = true
+	mainFrame.Parent = screenGui
+	Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 15)
 
--- กรอบสายรุ้งวิ่ง ๆ
-local stroke = Instance.new("UIStroke")
-stroke.Thickness = 3
-stroke.Parent = mainFrame
-
-task.spawn(function()
-	while true do
-		for i = 0, 1, 0.01 do
-			stroke.Color = Color3.fromHSV(i, 1, 1)
-			task.wait(0.05)
-		end
-	end
-end)
-
--- ปุ่ม Float
-local floatBtn = Instance.new("TextButton")
-floatBtn.Size = UDim2.new(1, -20, 1, -20)
-floatBtn.Position = UDim2.new(0, 10, 0, 10)
-floatBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-floatBtn.Text = "Float (F)"
-floatBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-floatBtn.Font = Enum.Font.GothamBold
-floatBtn.TextSize = 18
-floatBtn.Parent = mainFrame
-Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(0, 10)
-
--- ===== Drag Anywhere (PC + Mobile) =====
-local dragging, dragStart, startPos
-local function update(input)
-	local delta = input.Position - dragStart
-	mainFrame.Position = UDim2.new(
-		startPos.X.Scale, startPos.X.Offset + delta.X,
-		startPos.Y.Scale, startPos.Y.Offset + delta.Y
-	)
-end
-
-mainFrame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStart = input.Position
-		startPos = mainFrame.Position
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
+	-- กรอบสายรุ้ง
+	local stroke = Instance.new("UIStroke")
+	stroke.Thickness = 3
+	stroke.Parent = mainFrame
+	task.spawn(function()
+		while screenGui.Parent do
+			for i = 0, 1, 0.01 do
+				stroke.Color = Color3.fromHSV(i, 1, 1)
+				task.wait(0.05)
 			end
-		end)
-	end
-end)
+		end
+	end)
 
-UserInputService.InputChanged:Connect(function(input)
-	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-		update(input)
-	end
-end)
+	local floatBtn = Instance.new("TextButton")
+	floatBtn.Size = UDim2.new(1, -20, 1, -20)
+	floatBtn.Position = UDim2.new(0, 10, 0, 10)
+	floatBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	floatBtn.Text = "Float (F)"
+	floatBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	floatBtn.Font = Enum.Font.GothamBold
+	floatBtn.TextSize = 18
+	floatBtn.Parent = mainFrame
+	Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(0, 10)
 
--- ===== Connect Button & Hotkey =====
-floatBtn.MouseButton1Click:Connect(spawnLift)
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-	if gameProcessed then return end
-	if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.F then
-		spawnLift()
+	-- Drag Anywhere
+	local dragging, dragStart, startPos
+	local function update(input)
+		local delta = input.Position - dragStart
+		mainFrame.Position = UDim2.new(
+			startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y
+		)
 	end
-end)
+
+	mainFrame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = mainFrame.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			update(input)
+		end
+	end)
+
+	-- Connect Button & Hotkey **แค่ครั้งเดียว**
+	floatBtn.MouseButton1Click:Connect(spawnLift)
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed then return end
+		if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.F then
+			spawnLift()
+		end
+	end)
+end
