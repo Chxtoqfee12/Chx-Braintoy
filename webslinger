@@ -170,7 +170,7 @@ local function createPlayerButtons()
             btn.Size = UDim2.new(1, -10, 0, 25)
             btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
             btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            btn.Text = "⬇ User"
+            btn.Text = "⬇ User " .. plr.UserId
             btn.Font = Enum.Font.Gotham
             btn.TextSize = 14
             btn.AutoButtonColor = false
