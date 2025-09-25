@@ -11,12 +11,13 @@ screenGui.Name = "WebSlingerUI"
 screenGui.ResetOnSpawn = false
 
 local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.Size = UDim2.new(0, 200, 0, 320)
+mainFrame.Size = UDim2.new(0, 200, 0, 260)  -- ปรับให้เท่ากับ Laser
 mainFrame.Position = UDim2.new(1, -280, 0, 60)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.ClipsDescendants = true
+
 
 -- มุมโค้งมน
 local corner = Instance.new("UICorner", mainFrame)
@@ -54,7 +55,7 @@ playerListLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 -- ===== Scroll รายชื่อ =====
 local playerListFrame = Instance.new("ScrollingFrame", mainFrame)
-playerListFrame.Size = UDim2.new(1, -20, 0, 180)
+playerListFrame.Size = UDim2.new(1, -20, 0, 140) -- ปรับให้เท่ากับ Laser
 playerListFrame.Position = UDim2.new(0, 10, 0, 85)
 playerListFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 playerListFrame.BorderSizePixel = 0
@@ -197,6 +198,49 @@ local function createPlayerButtons()
     playerListFrame.CanvasSize = UDim2.new(0, 0, 0, #Players:GetPlayers()*30)
 end
 
+local currentSelectedButton = nil
+local currentSelectedPlayer = nil
+
+local function createPlayerButtons()
+    playerListFrame:ClearAllChildren()
+
+    -- สร้าง Layout หนึ่งครั้งเท่านั้น
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Padding = UDim.new(0,4)
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Parent = playerListFrame
+
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= player then
+            local btn = Instance.new("TextButton", playerListFrame)
+            btn.Size = UDim2.new(1, -10, 0, 25)
+            btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+            btn.TextColor3 = Color3.fromRGB(255,255,255)
+            btn.Text = " " .. plr.DisplayName
+            btn.Font = Enum.Font.Gotham
+            btn.TextSize = 14
+            btn.AutoButtonColor = false
+
+            local c = Instance.new("UICorner", btn)
+            c.CornerRadius = UDim.new(0,6)
+
+            btn.MouseButton1Click:Connect(function()
+                -- รีเซ็ตสีปุ่มเดิม
+                if currentSelectedButton then
+                    currentSelectedButton.BackgroundColor3 = Color3.fromRGB(60,60,60)
+                end
+                -- ตั้งปุ่มปัจจุบันเป็นสีแดง
+                btn.BackgroundColor3 = Color3.fromRGB(200,50,50)
+                currentSelectedButton = btn
+                currentSelectedPlayer = plr
+            end)
+        end
+    end
+
+    -- ปรับ CanvasSize ให้รองรับทุกคน
+    local totalPlayers = #Players:GetPlayers() - 1
+    playerListFrame.CanvasSize = UDim2.new(0,0,0,totalPlayers*30)
+end
 
 
 -- ===== สร้างปุ่ม Refresh =====
@@ -267,7 +311,6 @@ screenGui.AncestryChanged:Connect(function(_, parent)
 end)
 
 -- ===== Main loop Auto Web Slinger =====
-local currentTarget = nil
 spawn(function()
     while true do
         if AutoLaser then
@@ -276,23 +319,16 @@ spawn(function()
                 local myPos = root.Position
                 local tool = equipWebSlinger()
                 if tool then
-                    local closestTarget = nil
-                    local closestDist = math.huge
-                    for _, targetPlayer in pairs(Players:GetPlayers()) do
-                        if targetPlayer ~= player and targetPlayer.Character and targetPlayer.Character:FindFirstChild("UpperTorso") then
-                            local targetPart = targetPlayer.Character.UpperTorso
-                            local dist = (myPos - targetPart.Position).Magnitude
-                            if dist <= LaserDistance and dist < closestDist then
-                                closestDist = dist
-                                closestTarget = targetPlayer
-                            end
+                    local targetPlayer = currentSelectedPlayer -- ใช้คนที่เลือกจาก UI
+                    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("UpperTorso") then
+                        local targetPart = targetPlayer.Character.UpperTorso
+                        local dist = (myPos - targetPart.Position).Magnitude
+                        if dist <= LaserDistance then
+                            tool:Activate()
+                            Remote:FireServer(targetPart.Position, targetPart)
+                        else
+                            print("ผู้เล่น "..targetPlayer.Name.." อยู่เกินระยะ "..LaserDistance.." stud, ไม่ยิง")
                         end
-                    end
-                    currentTarget = closestTarget
-                    if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("UpperTorso") then
-                        local targetPart = currentTarget.Character.UpperTorso
-                        tool:Activate()
-                        Remote:FireServer(targetPart.Position, targetPart)
                     end
                 end
             end
@@ -300,6 +336,7 @@ spawn(function()
         task.wait(0.01)
     end
 end)
+
 
 -- ===== โหลดครั้งแรก =====
 createPlayerButtons()
