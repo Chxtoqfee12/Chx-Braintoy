@@ -28,7 +28,7 @@ stroke.Thickness = 3
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 stroke.Color = Color3.fromRGB(255, 0, 0)
 
--- ปุ่ม Auto Laser
+-- ===== ปุ่ม Auto Laser =====
 local autoLaserBtn = Instance.new("TextButton", mainFrame)
 autoLaserBtn.Size = UDim2.new(1, -20, 0, 40)
 autoLaserBtn.Position = UDim2.new(0, 10, 0, 10)
@@ -41,7 +41,7 @@ autoLaserBtn.AutoButtonColor = false
 local btnCorner = Instance.new("UICorner", autoLaserBtn)
 btnCorner.CornerRadius = UDim.new(0, 8)
 
--- Label รายชื่อ
+-- ===== Label รายชื่อ =====
 local playerListLabel = Instance.new("TextLabel", mainFrame)
 playerListLabel.Size = UDim2.new(1, -20, 0, 20)
 playerListLabel.Position = UDim2.new(0, 10, 0, 60)
@@ -52,7 +52,7 @@ playerListLabel.Font = Enum.Font.Gotham
 playerListLabel.TextSize = 14
 playerListLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Scroll รายชื่อ
+-- ===== Scroll รายชื่อ =====
 local playerListFrame = Instance.new("ScrollingFrame", mainFrame)
 playerListFrame.Size = UDim2.new(1, -20, 0, 140)
 playerListFrame.Position = UDim2.new(0, 10, 0, 85)
@@ -65,18 +65,6 @@ listCorner.CornerRadius = UDim.new(0, 8)
 local listLayout = Instance.new("UIListLayout", playerListFrame)
 listLayout.Padding = UDim.new(0, 4)
 listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
--- ปุ่ม Refresh
-local refreshBtn = Instance.new("TextButton", mainFrame)
-refreshBtn.Size = UDim2.new(1, -20, 0, 30)
-refreshBtn.Position = UDim2.new(0, 10, 0, 230)
-refreshBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-refreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-refreshBtn.Font = Enum.Font.GothamBold
-refreshBtn.TextSize = 14
-refreshBtn.Text = "🔄 Refresh Players"
-local refreshCorner = Instance.new("UICorner", refreshBtn)
-refreshCorner.CornerRadius = UDim.new(0, 6)
 
 -- ===== Drag Support =====
 local dragging, dragInput, dragStart, startPos
@@ -180,12 +168,56 @@ local function createPlayerButtons()
     playerListFrame.CanvasSize = UDim2.new(0, 0, 0, #Players:GetPlayers()*30)
 end
 
--- ปุ่ม Refresh
-refreshBtn.MouseButton1Click:Connect(function()
-    createPlayerButtons()
+-- ===== ปุ่ม Refresh =====
+local refreshBtn
+local function createRefreshBtn()
+    refreshBtn = Instance.new("TextButton", mainFrame)
+    refreshBtn.Size = UDim2.new(1, -20, 0, 30)
+    refreshBtn.Position = UDim2.new(0, 10, 0, 230)
+    refreshBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    refreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    refreshBtn.Font = Enum.Font.GothamBold
+    refreshBtn.TextSize = 14
+    refreshBtn.Text = "🔄 Refresh Players"
+    local refreshCorner = Instance.new("UICorner", refreshBtn)
+    refreshCorner.CornerRadius = UDim.new(0, 6)
+
+    refreshBtn.MouseButton1Click:Connect(function()
+        createPlayerButtons()
+    end)
+end
+
+-- ===== ปุ่มย่อ/ขยาย UI =====
+local uiMinimized = false
+local minimizeBtn = Instance.new("TextButton", mainFrame)
+minimizeBtn.Size = UDim2.new(0, 20, 0, 20)
+minimizeBtn.Position = UDim2.new(1, -30, 0, 10)
+minimizeBtn.Text = "–"
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextSize = 14
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+minimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+local minCorner = Instance.new("UICorner", minimizeBtn)
+minCorner.CornerRadius = UDim.new(0,4)
+
+minimizeBtn.MouseButton1Click:Connect(function()
+    uiMinimized = not uiMinimized
+    if uiMinimized then
+        mainFrame.Size = UDim2.new(0, 200, 0, 60)
+        playerListFrame.Visible = false
+        playerListLabel.Visible = false
+        if refreshBtn then refreshBtn:Destroy() end
+        minimizeBtn.Text = "+"
+    else
+        mainFrame.Size = UDim2.new(0, 200, 0, 260)
+        playerListFrame.Visible = true
+        playerListLabel.Visible = true
+        createRefreshBtn()
+        minimizeBtn.Text = "–"
+    end
 end)
 
--- ปุ่ม Auto Laser
+-- ===== ปุ่ม Auto Laser =====
 autoLaserBtn.MouseButton1Click:Connect(function()
     AutoLaser = not AutoLaser
     autoLaserBtn.Text = "Auto Laser " .. (AutoLaser and "ON" or "OFF")
@@ -203,10 +235,8 @@ screenGui.AncestryChanged:Connect(function(_, parent)
     end
 end)
 
--- Main Auto Laser loop
--- ===== Auto Laser loop ปรับปรุง (คนใกล้สุด + ห้ามยิง ignoreList) =====
+-- ===== Main Auto Laser loop =====
 local currentTarget = nil
-
 spawn(function()
     while true do
         if AutoLaser then
@@ -218,10 +248,9 @@ spawn(function()
                     local closestTarget = nil
                     local closestDist = math.huge
 
-                    -- หาคนใกล้ที่สุดที่ไม่อยู่ใน ignoreList
                     for _, targetPlayer in pairs(Players:GetPlayers()) do
                         if targetPlayer ~= player 
-                        and not ignoreList[targetPlayer.Name] -- ห้ามยิงคนใน ignoreList
+                        and not ignoreList[targetPlayer.Name]
                         and targetPlayer.Character
                         and targetPlayer.Character:FindFirstChild("UpperTorso") then
                             local targetPart = targetPlayer.Character.UpperTorso
@@ -233,12 +262,7 @@ spawn(function()
                         end
                     end
 
-                    -- อัปเดตเป้าหมายปัจจุบัน
-                    if closestTarget ~= currentTarget then
-                        currentTarget = closestTarget
-                    end
-
-                    -- ยิงเป้าหมายถ้ามี
+                    currentTarget = closestTarget
                     if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("UpperTorso") then
                         local targetPart = currentTarget.Character.UpperTorso
                         laserTool:Activate()
@@ -247,11 +271,10 @@ spawn(function()
                 end
             end
         end
-        task.wait(0.01) -- เว้นเวลาเล็กน้อย
+        task.wait(0.01)
     end
 end)
 
-
-
 -- โหลดครั้งแรก
 createPlayerButtons()
+createRefreshBtn()
