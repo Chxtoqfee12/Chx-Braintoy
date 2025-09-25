@@ -13,8 +13,8 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0,220,0,215)
-mainFrame.Position = UDim2.new(0,10,0,10) -- เปลี่ยนตรงนี้
+mainFrame.Size = UDim2.new(0,220,0,270)
+mainFrame.Position = UDim2.new(0,10,0,10)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
@@ -104,15 +104,16 @@ end
 
 local floatBtn = createButton("Float OFF",0,Color3.fromRGB(50,50,50))
 local autoLaserBtn = createButton("Auto Laser OFF",45,Color3.fromRGB(70,70,70))
-local functionBtn = createButton("Run Function",90,Color3.fromRGB(80,80,80))
-local hopBtn = createButton("Hop Server",135,Color3.fromRGB(50,50,50))
+local webSlingerBtn = createButton("Web Slinger OFF",90,Color3.fromRGB(60,60,120))
+local functionBtn = createButton("Run Function",135,Color3.fromRGB(80,80,80))
+local hopBtn = createButton("Hop Server",180,Color3.fromRGB(50,50,50))
 
 -- ===== Toggle UI Visibility =====
 local uiExpanded = true
 toggleBtn.MouseButton1Click:Connect(function()
     uiExpanded = not uiExpanded
     if uiExpanded then
-        mainFrame.Size = UDim2.new(0,220,0,215)
+        mainFrame.Size = UDim2.new(0,220,0,270)
         uiFrame.Visible = true
         for _,btn in ipairs(buttons) do btn.Visible = true end
         toggleBtn.Text = "-"
@@ -124,10 +125,9 @@ toggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ===== Drag MainFrame (รองรับ Mouse + Touch) =====
+-- ===== Drag MainFrame =====
 local dragging = false
 local dragStartPos, frameStartPos
-
 local function updateDrag(inputPos)
     local delta = inputPos - dragStartPos
     mainFrame.Position = UDim2.new(
@@ -137,50 +137,39 @@ local function updateDrag(inputPos)
         frameStartPos.Y.Offset + delta.Y
     )
 end
-
--- เริ่มลาก
 local function startDrag(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStartPos = input.Position
         frameStartPos = mainFrame.Position
-
         input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
         end)
     end
 end
-
--- กดบน TopBar หรือ Title Text เริ่มลาก
 topBar.InputBegan:Connect(startDrag)
 titleText.InputBegan:Connect(startDrag)
-
--- อัปเดตตำแหน่งตลอดเวลา
 UserInputService.InputChanged:Connect(function(input)
     if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         updateDrag(input.Position)
     end
 end)
 
-
-
-
-
 -- ===== State Variables =====
 local Floating = false
 local AutoLaser = false
+local WebSlinger = false
 
 -- ===== Float Button Logic =====
 floatBtn.MouseButton1Click:Connect(function()
     Floating = not Floating
     if Floating then
         floatBtn.Text = "Float ON"
-        local url = "https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/Float"
-        pcall(function() loadstring(game:HttpGet(url))() end)
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/Float"))()
+        end)
     else
-        floatBtn.Text = "Float Off"
+        floatBtn.Text = "Float OFF"
         local floatUI = playerGui:FindFirstChild("FloatUI")
         if floatUI then floatUI:Destroy() end
         if typeof(disableFloat) == "function" then pcall(disableFloat) end
@@ -192,8 +181,9 @@ autoLaserBtn.MouseButton1Click:Connect(function()
     AutoLaser = not AutoLaser
     if AutoLaser then
         autoLaserBtn.Text = "Auto Laser ON"
-        local url = "https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/Laser"
-        pcall(function() loadstring(game:HttpGet(url))() end)
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/Laser"))()
+        end)
     else
         autoLaserBtn.Text = "Auto Laser OFF"
         local laserUI = playerGui:FindFirstChild("AutoLaserUI")
@@ -202,50 +192,61 @@ autoLaserBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ===== Web Slinger Button Logic =====
+webSlingerBtn.MouseButton1Click:Connect(function()
+    WebSlinger = not WebSlinger
+    if WebSlinger then
+        webSlingerBtn.Text = "Web Slinger ON"
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/webslinger"))()
+        end)
+    else
+        webSlingerBtn.Text = "Web Slinger OFF"
+        local wsUI = playerGui:FindFirstChild("WebSlingerUI")
+        if wsUI then wsUI:Destroy() end
+    end
+end)
+
 -- ===== Function Button =====
 functionBtn.MouseButton1Click:Connect(function()
-    local url = "https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"
-    pcall(function() loadstring(game:HttpGet(url))() end)
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20function"))()
+    end)
 end)
 
 -- ===== Hop Server Button =====
 hopBtn.MouseButton1Click:Connect(function()
-    getgenv().ALLOWED_PLACE_ID = 109983668079237
-    getgenv().RETRY_DELAY = 2
-    getgenv().MIN_PLAYERS = 2
-    getgenv().MAX_PLAYERS = 7
-    getgenv().CHECK_COOLDOWN = 5
-    getgenv().SOUND_ID = 91907916191505
-    getgenv().MODEL_SEARCH_SETTINGS = {}
-
     spawn(function()
         while true do
-            task.spawn(function()
-                local success, err = pcall(function()
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
-                end)
-                if not success then warn("Hop Server failed:", err) end
+            pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/Chxtoqfee12/Chx-Braintoy/refs/heads/main/src%20hop%20server"))()
             end)
             wait(5)
         end
     end)
 end)
 
--- ===== Close Main UI Logic =====
+-- ===== Close Main UI =====
 closeBtn.MouseButton1Click:Connect(function()
-    -- ปิด Float + ลบ UI
+    -- ปิด Float
     Floating = false
-    floatBtn.Text = "Float Off"
+    floatBtn.Text = "Float OFF"
     local floatUI = playerGui:FindFirstChild("FloatUI")
     if floatUI then floatUI:Destroy() end
     if typeof(disableFloat) == "function" then pcall(disableFloat) end
 
-    -- ปิด AutoLaser + ลบ UI
+    -- ปิด AutoLaser
     AutoLaser = false
     autoLaserBtn.Text = "Auto Laser OFF"
     local laserUI = playerGui:FindFirstChild("AutoLaserUI")
     if laserUI then laserUI:Destroy() end
     if typeof(unequipLaser) == "function" then pcall(unequipLaser) end
+
+    -- ปิด Web Slinger
+    WebSlinger = false
+    webSlingerBtn.Text = "Web Slinger OFF"
+    local wsUI = playerGui:FindFirstChild("WebSlingerUI")
+    if wsUI then wsUI:Destroy() end
 
     -- ลบ UI หลัก
     if screenGui and screenGui.Parent then
