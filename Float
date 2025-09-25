@@ -10,14 +10,14 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- ===== CollisionGroup =====
 task.defer(function()
 	if not pcall(function() PhysicsService:CreateCollisionGroup("Float") end) then end
-	PhysicsService:CollisionGroupSetCollidable("Float", "Default", false)
-	PhysicsService:CollisionGroupSetCollidable("Float", "Player", true)
+	PhysicsService:CollisionGroupSetCollidable("Float", "Default", false) -- ไม่ชนสิ่งก่อสร้าง
+	PhysicsService:CollisionGroupSetCollidable("Float", "Player", true)  -- ยังชน Player ได้
 end)
 
 -- ===== Settings =====
-local FLOAT_HEIGHT = 100
-local RISE_TIME = 5
-local OFFSET_BELOW = 3
+local FLOAT_HEIGHT = 100   -- ความสูงที่จะลอยขึ้น
+local RISE_TIME = 5        -- เวลาในการลอยขึ้น
+local OFFSET_BELOW = 3     -- สร้างแผ่นใต้เท้าเล็กน้อย
 
 -- ===== Function Float =====
 local function spawnLift()
@@ -26,16 +26,20 @@ local function spawnLift()
 	local root = char:FindFirstChild("HumanoidRootPart")
 	if not root then return end
 
+	-- สร้างแผ่น
 	local floatPart = Instance.new("Part")
-	floatPart.Size = Vector3.new(10, 1, 10)
+	floatPart.Size = Vector3.new(15, 2, 15)
 	floatPart.Anchored = false
 	floatPart.CanCollide = true
 	floatPart.Position = root.Position - Vector3.new(0, OFFSET_BELOW, 0)
 	floatPart.Rotation = Vector3.new(0,0,0)
+	floatPart.Name = "FloatPart"
 	floatPart.Parent = workspace
 
+	-- จัดกลุ่ม Collision
 	PhysicsService:SetPartCollisionGroup(floatPart, "Float")
 
+	-- BodyMover
 	local bp = Instance.new("BodyPosition")
 	bp.MaxForce = Vector3.new(1e6,1e6,1e6)
 	bp.P = 5000
@@ -49,12 +53,13 @@ local function spawnLift()
 	bg.CFrame = CFrame.new(floatPart.Position)
 	bg.Parent = floatPart
 
+	-- Animate ลอยขึ้น
 	local startTime = tick()
 	local startPos = floatPart.Position
 	local endPos = startPos + Vector3.new(0, FLOAT_HEIGHT, 0)
 
 	local conn
-	conn = RunService.Heartbeat:Connect(function(dt)
+	conn = RunService.Heartbeat:Connect(function()
 		local alpha = math.clamp((tick() - startTime)/RISE_TIME, 0, 1)
 		bp.Position = startPos:Lerp(endPos, alpha)
 		bg.CFrame = CFrame.new(bp.Position)
@@ -66,6 +71,7 @@ local function spawnLift()
 		end
 	end)
 
+	-- ทำลายตัวเองหลัง 5 วิ
 	task.delay(5, function()
 		if floatPart then
 			floatPart:Destroy()
@@ -77,12 +83,13 @@ end
 if not playerGui:FindFirstChild("FloatUI") then
 	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = "FloatUI"
+	screenGui.ResetOnSpawn = false -- ไม่หายเวลา Respawn
 	screenGui.Parent = playerGui
 
 	local mainFrame = Instance.new("Frame")
 	mainFrame.Size = UDim2.new(0, 160, 0, 60)
 	mainFrame.AnchorPoint = Vector2.new(1,0)
-	mainFrame.Position = UDim2.new(1, -100, 0, -10)
+	mainFrame.Position = UDim2.new(1, -100, 0, 50)
 	mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 	mainFrame.Active = true
 	mainFrame.Parent = screenGui
@@ -141,7 +148,7 @@ if not playerGui:FindFirstChild("FloatUI") then
 		end
 	end)
 
-	-- Connect Button & Hotkey **แค่ครั้งเดียว**
+	-- Connect Button & Hotkey
 	floatBtn.MouseButton1Click:Connect(spawnLift)
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if gameProcessed then return end
