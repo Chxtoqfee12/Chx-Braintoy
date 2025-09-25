@@ -157,8 +157,8 @@ local function pullPlayer(targetPlayer)
     end
 end
 
--- ===== ฟังก์ชันสร้างปุ่มผู้เล่น =====
--- ===== ฟังก์ชันสร้างปุ่มผู้เล่น =====
+local currentSelectedButton = nil
+
 local function createPlayerButtons()
     playerListFrame:ClearAllChildren()
     local listLayout = Instance.new("UIListLayout", playerListFrame)
@@ -171,7 +171,7 @@ local function createPlayerButtons()
             btn.Size = UDim2.new(1, -10, 0, 25)
             btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
             btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            btn.Text = " " .. plr.DisplayName  -- แสดงชื่อเล่น
+            btn.Text = " " .. plr.DisplayName
             btn.Font = Enum.Font.Gotham
             btn.TextSize = 14
             btn.AutoButtonColor = false
@@ -180,6 +180,16 @@ local function createPlayerButtons()
             c.CornerRadius = UDim.new(0, 6)
 
             btn.MouseButton1Click:Connect(function()
+                -- เปลี่ยนสีปุ่มเก่าเป็นปกติ
+                if currentSelectedButton then
+                    currentSelectedButton.BackgroundColor3 = Color3.fromRGB(60,60,60)
+                end
+
+                -- เปลี่ยนสีปุ่มที่เลือกเป็นสีแดง
+                btn.BackgroundColor3 = Color3.fromRGB(200,50,50)
+                currentSelectedButton = btn
+
+                -- ยิง Laser ไปยังผู้เล่นที่เลือก
                 pullPlayer(plr)
             end)
         end
