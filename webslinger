@@ -7,7 +7,7 @@ local player = Players.LocalPlayer
 
 -- ===== UI =====
 local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-screenGui.Name = "AutoWebPullUI"
+screenGui.Name = "WebSlingerUI"
 screenGui.ResetOnSpawn = false
 
 local mainFrame = Instance.new("Frame", screenGui)
