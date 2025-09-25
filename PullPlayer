@@ -7,11 +7,11 @@ local player = Players.LocalPlayer
 
 -- ===== UI =====
 local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-screenGui.Name = "PullUI"
+screenGui.Name = "AutoWebPullUI"
 screenGui.ResetOnSpawn = false
 
 local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.Size = UDim2.new(0, 200, 0, 260)
+mainFrame.Size = UDim2.new(0, 200, 0, 320)
 mainFrame.Position = UDim2.new(1, -280, 0, 60)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BorderSizePixel = 0
@@ -28,33 +28,33 @@ stroke.Thickness = 3
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 stroke.Color = Color3.fromRGB(255, 0, 0)
 
--- ปุ่ม Pull Mode
-local pullBtn = Instance.new("TextButton", mainFrame)
-pullBtn.Size = UDim2.new(1, -20, 0, 40)
-pullBtn.Position = UDim2.new(0, 10, 0, 10)
-pullBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-pullBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-pullBtn.Font = Enum.Font.GothamBold
-pullBtn.TextSize = 16
-pullBtn.Text = "Pull Mode OFF"
-pullBtn.AutoButtonColor = false
-local btnCorner = Instance.new("UICorner", pullBtn)
+-- ===== ปุ่ม Auto Web Slinger =====
+local autoLaserBtn = Instance.new("TextButton", mainFrame)
+autoLaserBtn.Size = UDim2.new(1, -20, 0, 40)
+autoLaserBtn.Position = UDim2.new(0, 10, 0, 10)
+autoLaserBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+autoLaserBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoLaserBtn.Font = Enum.Font.GothamBold
+autoLaserBtn.TextSize = 16
+autoLaserBtn.Text = "Auto Web Slinger OFF"
+autoLaserBtn.AutoButtonColor = false
+local btnCorner = Instance.new("UICorner", autoLaserBtn)
 btnCorner.CornerRadius = UDim.new(0, 8)
 
--- Label รายชื่อ
+-- ===== Label รายชื่อ Pull =====
 local playerListLabel = Instance.new("TextLabel", mainFrame)
 playerListLabel.Size = UDim2.new(1, -20, 0, 20)
 playerListLabel.Position = UDim2.new(0, 10, 0, 60)
 playerListLabel.BackgroundTransparency = 1
-playerListLabel.Text = "เลือกผู้เล่นที่จะดึง:"
+playerListLabel.Text = "เลือกผู้เล่นที่จะดึง (<=20 stud):"
 playerListLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 playerListLabel.Font = Enum.Font.Gotham
 playerListLabel.TextSize = 14
 playerListLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Scroll รายชื่อ
+-- ===== Scroll รายชื่อ =====
 local playerListFrame = Instance.new("ScrollingFrame", mainFrame)
-playerListFrame.Size = UDim2.new(1, -20, 0, 140)
+playerListFrame.Size = UDim2.new(1, -20, 0, 180)
 playerListFrame.Position = UDim2.new(0, 10, 0, 85)
 playerListFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 playerListFrame.BorderSizePixel = 0
@@ -65,18 +65,6 @@ listCorner.CornerRadius = UDim.new(0, 8)
 local listLayout = Instance.new("UIListLayout", playerListFrame)
 listLayout.Padding = UDim.new(0, 4)
 listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
--- ปุ่ม Refresh
-local refreshBtn = Instance.new("TextButton", mainFrame)
-refreshBtn.Size = UDim2.new(1, -20, 0, 30)
-refreshBtn.Position = UDim2.new(0, 10, 0, 230)
-refreshBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-refreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-refreshBtn.Font = Enum.Font.GothamBold
-refreshBtn.TextSize = 14
-refreshBtn.Text = "🔄 Refresh Players"
-local refreshCorner = Instance.new("UICorner", refreshBtn)
-refreshCorner.CornerRadius = UDim.new(0, 6)
 
 -- ===== Drag Support =====
 local dragging, dragInput, dragStart, startPos
@@ -116,27 +104,60 @@ task.spawn(function()
     end
 end)
 
--- ===== Pull Logic =====
-local Remote = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/UseItem")
-local PullPosition = Vector3.new(-407.225, -6.789, 77.851)
+-- ===== Auto Web Slinger Logic =====
+local AutoLaser = false
+local LaserDistance = 20
+local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net")
+local Remote = Net:WaitForChild("RE/UseItem")
 
-local PullMode = false
-local selectedPlayers = {}
+local function getRoot()
+    local char = player.Character
+    if char then return char:FindFirstChild("HumanoidRootPart") end
+end
+
+local function equipWebSlinger()
+    local backpack = player:WaitForChild("Backpack")
+    local character = player.Character
+    local humanoid = character:FindFirstChild("Humanoid")
+    local tool = backpack:FindFirstChild("Web Slinger") or character:FindFirstChild("Web Slinger")
+    if tool and humanoid then
+        if tool.Parent ~= character then
+            humanoid:EquipTool(tool)
+            RunService.RenderStepped:Wait()
+        end
+        return tool
+    end
+    return nil
+end
+
+local function unequipWebSlinger()
+    local character = player.Character
+    local backpack = player:WaitForChild("Backpack")
+    local tool = character:FindFirstChild("Web Slinger")
+    if tool then tool.Parent = backpack end
+end
+
+-- ===== Pull Logic =====
+local PullDistance = 20
+local PullPosition = Vector3.new(-407.225, -6.789, 77.851)
 
 local function pullPlayer(targetPlayer)
     if targetPlayer and targetPlayer.Character then
-        local hrp = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            local args = {
-                vector.create(PullPosition.X, PullPosition.Y, PullPosition.Z),
-                hrp
-            }
-            Remote:FireServer(unpack(args))
+        local myRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        local targetRoot = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if myRoot and targetRoot then
+            local distance = (myRoot.Position - targetRoot.Position).Magnitude
+            if distance <= PullDistance then
+                local args = {Vector3.new(PullPosition.X, PullPosition.Y, PullPosition.Z), targetRoot}
+                Remote:FireServer(unpack(args))
+            else
+                print("ผู้เล่น "..targetPlayer.Name.." อยู่เกินระยะ "..PullDistance.." stud, ไม่ดึง")
+            end
         end
     end
 end
 
--- สร้างปุ่มรายชื่อผู้เล่น
+-- ===== ฟังก์ชันสร้างปุ่มผู้เล่น =====
 local function createPlayerButtons()
     playerListFrame:ClearAllChildren()
     local listLayout = Instance.new("UIListLayout", playerListFrame)
@@ -147,9 +168,9 @@ local function createPlayerButtons()
         if plr ~= player then
             local btn = Instance.new("TextButton", playerListFrame)
             btn.Size = UDim2.new(1, -10, 0, 25)
-            btn.BackgroundColor3 = selectedPlayers[plr.Name] and Color3.fromRGB(200, 80, 80) or Color3.fromRGB(60, 60, 60)
+            btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
             btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            btn.Text = plr.Name
+            btn.Text = "⬇ " .. plr.Name
             btn.Font = Enum.Font.Gotham
             btn.TextSize = 14
             btn.AutoButtonColor = false
@@ -158,42 +179,115 @@ local function createPlayerButtons()
             c.CornerRadius = UDim.new(0, 6)
 
             btn.MouseButton1Click:Connect(function()
-                selectedPlayers[plr.Name] = not selectedPlayers[plr.Name]
-                btn.BackgroundColor3 = selectedPlayers[plr.Name] and Color3.fromRGB(200, 80, 80) or Color3.fromRGB(60, 60, 60)
+                pullPlayer(plr)
             end)
         end
     end
     playerListFrame.CanvasSize = UDim2.new(0, 0, 0, #Players:GetPlayers()*30)
 end
 
--- ปุ่ม Refresh
-refreshBtn.MouseButton1Click:Connect(function()
-    createPlayerButtons()
+-- ===== สร้างปุ่ม Refresh =====
+local refreshBtn
+local function createRefreshBtn()
+    refreshBtn = Instance.new("TextButton", mainFrame)
+    refreshBtn.Size = UDim2.new(1, -20, 0, 30)
+    refreshBtn.Position = UDim2.new(0, 10, 1, -40)
+    refreshBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    refreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    refreshBtn.Font = Enum.Font.GothamBold
+    refreshBtn.TextSize = 14
+    refreshBtn.Text = "🔄 Refresh Players"
+    local refreshCorner = Instance.new("UICorner", refreshBtn)
+    refreshCorner.CornerRadius = UDim.new(0, 6)
+
+    refreshBtn.MouseButton1Click:Connect(function()
+        createPlayerButtons()
+    end)
+end
+
+-- ===== ปุ่มย่อ/ขยาย UI =====
+local uiMinimized = false
+local minimizeBtn = Instance.new("TextButton", mainFrame)
+minimizeBtn.Size = UDim2.new(0, 20, 0, 20)
+minimizeBtn.Position = UDim2.new(1, -30, 0, 10)
+minimizeBtn.Text = "–"
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextSize = 14
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+minimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+local minCorner = Instance.new("UICorner", minimizeBtn)
+minCorner.CornerRadius = UDim.new(0,4)
+
+minimizeBtn.MouseButton1Click:Connect(function()
+    uiMinimized = not uiMinimized
+    if uiMinimized then
+        mainFrame.Size = UDim2.new(0, 200, 0, 60)
+        playerListFrame.Visible = false
+        playerListLabel.Visible = false
+        if refreshBtn then refreshBtn:Destroy() end
+        minimizeBtn.Text = "+"
+    else
+        mainFrame.Size = UDim2.new(0, 200, 0, 320)
+        playerListFrame.Visible = true
+        playerListLabel.Visible = true
+        createRefreshBtn()
+        minimizeBtn.Text = "–"
+    end
 end)
 
--- ปุ่ม Pull Mode
-pullBtn.MouseButton1Click:Connect(function()
-    PullMode = not PullMode
-    pullBtn.Text = "Pull Mode " .. (PullMode and "ON" or "OFF")
-    pullBtn.BackgroundColor3 = PullMode and Color3.fromRGB(50,200,100) or Color3.fromRGB(50,50,50)
+-- ===== ปุ่ม Auto Web Slinger =====
+autoLaserBtn.MouseButton1Click:Connect(function()
+    AutoLaser = not AutoLaser
+    autoLaserBtn.Text = "Auto Web Slinger " .. (AutoLaser and "ON" or "OFF")
+    autoLaserBtn.BackgroundColor3 = AutoLaser and Color3.fromRGB(50,200,100) or Color3.fromRGB(50,50,50)
+    if not AutoLaser then unequipWebSlinger() end
 end)
 
--- Loop ดึง
+-- ปิดอัตโนมัติถ้า UI ถูกลบ
+screenGui.AncestryChanged:Connect(function(_, parent)
+    if not parent and AutoLaser then
+        AutoLaser = false
+        autoLaserBtn.Text = "Auto Web Slinger OFF"
+        autoLaserBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+        unequipWebSlinger()
+    end
+end)
+
+-- ===== Main loop Auto Web Slinger =====
+local currentTarget = nil
 spawn(function()
     while true do
-        if PullMode then
-            for name, active in pairs(selectedPlayers) do
-                if active then
-                    local plr = Players:FindFirstChild(name)
-                    if plr then
-                        pullPlayer(plr)
+        if AutoLaser then
+            local root = getRoot()
+            if root then
+                local myPos = root.Position
+                local tool = equipWebSlinger()
+                if tool then
+                    local closestTarget = nil
+                    local closestDist = math.huge
+                    for _, targetPlayer in pairs(Players:GetPlayers()) do
+                        if targetPlayer ~= player and targetPlayer.Character and targetPlayer.Character:FindFirstChild("UpperTorso") then
+                            local targetPart = targetPlayer.Character.UpperTorso
+                            local dist = (myPos - targetPart.Position).Magnitude
+                            if dist <= LaserDistance and dist < closestDist then
+                                closestDist = dist
+                                closestTarget = targetPlayer
+                            end
+                        end
+                    end
+                    currentTarget = closestTarget
+                    if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("UpperTorso") then
+                        local targetPart = currentTarget.Character.UpperTorso
+                        tool:Activate()
+                        Remote:FireServer(targetPart.Position, targetPart)
                     end
                 end
             end
         end
-        task.wait(0.5) -- ดึงทุก 0.5 วิ
+        task.wait(0.01)
     end
 end)
 
--- โหลดครั้งแรก
+-- ===== โหลดครั้งแรก =====
 createPlayerButtons()
+createRefreshBtn()
