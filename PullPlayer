@@ -1,0 +1,158 @@
+-- ===== Services =====
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
+-- ===== UI =====
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "PullUI"
+screenGui.ResetOnSpawn = false
+
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 200, 0, 260)
+mainFrame.Position = UDim2.new(1, -280, 0, 60)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.ClipsDescendants = true
+
+local corner = Instance.new("UICorner", mainFrame)
+corner.CornerRadius = UDim.new(0, 12)
+
+local stroke = Instance.new("UIStroke", mainFrame)
+stroke.Thickness = 3
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Color = Color3.fromRGB(255, 0, 0)
+
+-- Label
+local playerListLabel = Instance.new("TextLabel", mainFrame)
+playerListLabel.Size = UDim2.new(1, -20, 0, 20)
+playerListLabel.Position = UDim2.new(0, 10, 0, 10)
+playerListLabel.BackgroundTransparency = 1
+playerListLabel.Text = "เลือกผู้เล่นที่จะดึง:"
+playerListLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+playerListLabel.Font = Enum.Font.Gotham
+playerListLabel.TextSize = 14
+playerListLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Scroll รายชื่อ
+local playerListFrame = Instance.new("ScrollingFrame", mainFrame)
+playerListFrame.Size = UDim2.new(1, -20, 0, 180)
+playerListFrame.Position = UDim2.new(0, 10, 0, 40)
+playerListFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+playerListFrame.BorderSizePixel = 0
+playerListFrame.ScrollBarThickness = 6
+local listCorner = Instance.new("UICorner", playerListFrame)
+listCorner.CornerRadius = UDim.new(0, 8)
+
+local listLayout = Instance.new("UIListLayout", playerListFrame)
+listLayout.Padding = UDim.new(0, 4)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- ปุ่ม Refresh
+local refreshBtn = Instance.new("TextButton", mainFrame)
+refreshBtn.Size = UDim2.new(1, -20, 0, 30)
+refreshBtn.Position = UDim2.new(0, 10, 1, -40)
+refreshBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+refreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+refreshBtn.Font = Enum.Font.GothamBold
+refreshBtn.TextSize = 14
+refreshBtn.Text = "🔄 Refresh Players"
+local refreshCorner = Instance.new("UICorner", refreshBtn)
+refreshCorner.CornerRadius = UDim.new(0, 6)
+
+-- ===== Drag Support =====
+local dragging, dragInput, dragStart, startPos
+local function update(input)
+    local delta = input.Position - dragStart
+    mainFrame.Position = UDim2.new(
+        startPos.X.Scale, startPos.X.Offset + delta.X,
+        startPos.Y.Scale, startPos.Y.Offset + delta.Y
+    )
+end
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+mainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then update(input) end
+end)
+
+-- ===== Rainbow Border =====
+task.spawn(function()
+    local t = 0
+    while screenGui.Parent do
+        t = t + RunService.Heartbeat:Wait()
+        local r = math.sin(t*2) * 127 + 128
+        local g = math.sin(t*2 + 2) * 127 + 128
+        local b = math.sin(t*2 + 4) * 127 + 128
+        stroke.Color = Color3.fromRGB(r, g, b)
+    end
+end)
+
+-- ===== Pull Player Logic =====
+local Remote = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/UseItem")
+
+-- ตำแหน่งที่จะดึงผู้เล่นมา (แก้ได้เอง)
+local PullPosition = Vector3.new(-407.225, -6.789, 77.851)
+
+local function pullPlayer(targetPlayer)
+    if targetPlayer and targetPlayer.Character then
+        local hrp = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            local args = {
+                vector.create(PullPosition.X, PullPosition.Y, PullPosition.Z),
+                hrp
+            }
+            Remote:FireServer(unpack(args))
+        end
+    end
+end
+
+-- ฟังก์ชันสร้างปุ่มผู้เล่น
+local function createPlayerButtons()
+    playerListFrame:ClearAllChildren()
+    local listLayout = Instance.new("UIListLayout", playerListFrame)
+    listLayout.Padding = UDim.new(0, 4)
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= player then
+            local btn = Instance.new("TextButton", playerListFrame)
+            btn.Size = UDim2.new(1, -10, 0, 25)
+            btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            btn.Text = "⬇ " .. plr.Name
+            btn.Font = Enum.Font.Gotham
+            btn.TextSize = 14
+            btn.AutoButtonColor = false
+
+            local c = Instance.new("UICorner", btn)
+            c.CornerRadius = UDim.new(0, 6)
+
+            btn.MouseButton1Click:Connect(function()
+                pullPlayer(plr)
+            end)
+        end
+    end
+    playerListFrame.CanvasSize = UDim2.new(0, 0, 0, #Players:GetPlayers()*30)
+end
+
+-- ปุ่ม Refresh
+refreshBtn.MouseButton1Click:Connect(function()
+    createPlayerButtons()
+end)
+
+-- โหลดครั้งแรก
+createPlayerButtons()
