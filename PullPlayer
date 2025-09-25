@@ -18,18 +18,33 @@ mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.ClipsDescendants = true
 
+-- มุมโค้งมน
 local corner = Instance.new("UICorner", mainFrame)
 corner.CornerRadius = UDim.new(0, 12)
 
+-- เส้นขอบสายรุ้ง
 local stroke = Instance.new("UIStroke", mainFrame)
 stroke.Thickness = 3
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 stroke.Color = Color3.fromRGB(255, 0, 0)
 
--- Label
+-- ปุ่ม Pull Mode
+local pullBtn = Instance.new("TextButton", mainFrame)
+pullBtn.Size = UDim2.new(1, -20, 0, 40)
+pullBtn.Position = UDim2.new(0, 10, 0, 10)
+pullBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+pullBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+pullBtn.Font = Enum.Font.GothamBold
+pullBtn.TextSize = 16
+pullBtn.Text = "Pull Mode OFF"
+pullBtn.AutoButtonColor = false
+local btnCorner = Instance.new("UICorner", pullBtn)
+btnCorner.CornerRadius = UDim.new(0, 8)
+
+-- Label รายชื่อ
 local playerListLabel = Instance.new("TextLabel", mainFrame)
 playerListLabel.Size = UDim2.new(1, -20, 0, 20)
-playerListLabel.Position = UDim2.new(0, 10, 0, 10)
+playerListLabel.Position = UDim2.new(0, 10, 0, 60)
 playerListLabel.BackgroundTransparency = 1
 playerListLabel.Text = "เลือกผู้เล่นที่จะดึง:"
 playerListLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -39,8 +54,8 @@ playerListLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Scroll รายชื่อ
 local playerListFrame = Instance.new("ScrollingFrame", mainFrame)
-playerListFrame.Size = UDim2.new(1, -20, 0, 180)
-playerListFrame.Position = UDim2.new(0, 10, 0, 40)
+playerListFrame.Size = UDim2.new(1, -20, 0, 140)
+playerListFrame.Position = UDim2.new(0, 10, 0, 85)
 playerListFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 playerListFrame.BorderSizePixel = 0
 playerListFrame.ScrollBarThickness = 6
@@ -54,7 +69,7 @@ listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 -- ปุ่ม Refresh
 local refreshBtn = Instance.new("TextButton", mainFrame)
 refreshBtn.Size = UDim2.new(1, -20, 0, 30)
-refreshBtn.Position = UDim2.new(0, 10, 1, -40)
+refreshBtn.Position = UDim2.new(0, 10, 0, 230)
 refreshBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 refreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 refreshBtn.Font = Enum.Font.GothamBold
@@ -101,11 +116,12 @@ task.spawn(function()
     end
 end)
 
--- ===== Pull Player Logic =====
+-- ===== Pull Logic =====
 local Remote = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RE/UseItem")
-
--- ตำแหน่งที่จะดึงผู้เล่นมา (แก้ได้เอง)
 local PullPosition = Vector3.new(-407.225, -6.789, 77.851)
+
+local PullMode = false
+local selectedPlayers = {}
 
 local function pullPlayer(targetPlayer)
     if targetPlayer and targetPlayer.Character then
@@ -120,7 +136,7 @@ local function pullPlayer(targetPlayer)
     end
 end
 
--- ฟังก์ชันสร้างปุ่มผู้เล่น
+-- สร้างปุ่มรายชื่อผู้เล่น
 local function createPlayerButtons()
     playerListFrame:ClearAllChildren()
     local listLayout = Instance.new("UIListLayout", playerListFrame)
@@ -131,9 +147,9 @@ local function createPlayerButtons()
         if plr ~= player then
             local btn = Instance.new("TextButton", playerListFrame)
             btn.Size = UDim2.new(1, -10, 0, 25)
-            btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            btn.BackgroundColor3 = selectedPlayers[plr.Name] and Color3.fromRGB(200, 80, 80) or Color3.fromRGB(60, 60, 60)
             btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            btn.Text = "⬇ " .. plr.Name
+            btn.Text = plr.Name
             btn.Font = Enum.Font.Gotham
             btn.TextSize = 14
             btn.AutoButtonColor = false
@@ -142,7 +158,8 @@ local function createPlayerButtons()
             c.CornerRadius = UDim.new(0, 6)
 
             btn.MouseButton1Click:Connect(function()
-                pullPlayer(plr)
+                selectedPlayers[plr.Name] = not selectedPlayers[plr.Name]
+                btn.BackgroundColor3 = selectedPlayers[plr.Name] and Color3.fromRGB(200, 80, 80) or Color3.fromRGB(60, 60, 60)
             end)
         end
     end
@@ -152,6 +169,30 @@ end
 -- ปุ่ม Refresh
 refreshBtn.MouseButton1Click:Connect(function()
     createPlayerButtons()
+end)
+
+-- ปุ่ม Pull Mode
+pullBtn.MouseButton1Click:Connect(function()
+    PullMode = not PullMode
+    pullBtn.Text = "Pull Mode " .. (PullMode and "ON" or "OFF")
+    pullBtn.BackgroundColor3 = PullMode and Color3.fromRGB(50,200,100) or Color3.fromRGB(50,50,50)
+end)
+
+-- Loop ดึง
+spawn(function()
+    while true do
+        if PullMode then
+            for name, active in pairs(selectedPlayers) do
+                if active then
+                    local plr = Players:FindFirstChild(name)
+                    if plr then
+                        pullPlayer(plr)
+                    end
+                end
+            end
+        end
+        task.wait(0.5) -- ดึงทุก 0.5 วิ
+    end
 end)
 
 -- โหลดครั้งแรก
