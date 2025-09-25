@@ -311,31 +311,40 @@ screenGui.AncestryChanged:Connect(function(_, parent)
 end)
 
 -- ===== Main loop Auto Web Slinger =====
+local holdingTool = false
 spawn(function()
     while true do
-        if AutoLaser then
-            local root = getRoot()
-            if root then
-                local myPos = root.Position
-                local tool = equipWebSlinger()
-                if tool then
-                    local targetPlayer = currentSelectedPlayer -- ใช้คนที่เลือกจาก UI
-                    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("UpperTorso") then
-                        local targetPart = targetPlayer.Character.UpperTorso
-                        local dist = (myPos - targetPart.Position).Magnitude
-                        if dist <= LaserDistance then
-                            tool:Activate()
-                            Remote:FireServer(targetPart.Position, targetPart)
-                        else
-                            print("ผู้เล่น "..targetPlayer.Name.." อยู่เกินระยะ "..LaserDistance.." stud, ไม่ยิง")
-                        end
+        local root = getRoot()
+        if AutoLaser and root then
+            local myPos = root.Position
+            local targetPlayer = currentSelectedPlayer
+            if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("UpperTorso") then
+                local targetPart = targetPlayer.Character.UpperTorso
+                local dist = (myPos - targetPart.Position).Magnitude
+                local tool = player.Character:FindFirstChild("Web Slinger")
+                
+                if dist <= LaserDistance then
+                    -- ถือถ้ายังไม่ได้ถือ
+                    if not tool then
+                        tool = equipWebSlinger()
+                    end
+                    -- ยิง/เชื่อม
+                    if tool then
+                        tool:Activate()
+                        Remote:FireServer(targetPart.Position, targetPart)
                     end
                 end
             end
+        elseif not AutoLaser then
+            -- ปล่อย Web Slinger เมื่อปิด Auto
+            unequipWebSlinger()
         end
-        task.wait(0.01)
+        task.wait(0.05)
     end
 end)
+
+
+
 
 
 -- ===== โหลดครั้งแรก =====
